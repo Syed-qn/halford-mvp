@@ -19,8 +19,11 @@ services:
   - type: web
     name: halford-ai-qs-workbench
     runtime: node
-    plan: standard            # Persistent disks are not available on `free` — Standard ($7/mo) is the minimum
-    region: frankfurt         # Closest to UAE / GCC; change if your users are elsewhere
+    plan: free                # Free tier — no persistent disk; data wipes on restart.
+                              # Keep-alive workflow at .github/workflows/keepalive.yml
+                              # pings /healthz every 10 min so the instance never sleeps.
+                              # Upgrade to `starter` ($7/mo) when you need persistence.
+    region: frankfurt
     buildCommand: cd server && npm install
     startCommand: cd server && npm start
     healthCheckPath: /healthz
@@ -28,10 +31,6 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
-      - key: PORT
-        value: 10000          # Render injects PORT — this is just the default if unset
-      - key: DATA_DIR
-        value: /var/data      # Matches the disk mount path below
       - key: ANTHROPIC_API_KEY
         sync: false           # Set in Render dashboard
       - key: APS_CLIENT_ID
@@ -40,7 +39,3 @@ services:
         sync: false
       - key: APS_WEBHOOK_URL
         sync: false           # Optional — set after first deploy with the public URL
-    disk:
-      name: halford-data
-      mountPath: /var/data
-      sizeGB: 10              # 10 GB covers ~50 projects with full DWG uploads + PDB cache
