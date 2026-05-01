@@ -1,0 +1,29 @@
+name: Keep Render awake
+
+# Render free instances spin down after 15 min of inactivity, costing ~50 sec
+# of cold-start delay on the next request. We ping /healthz every 10 min so
+# the idle clock never expires.
+#
+# After the first Render deploy succeeds, set the repo variable RENDER_URL to
+# your service URL (Settings → Secrets and variables → Actions → Variables → New):
+#     RENDER_URL = https://halford-ai-qs-workbench.onrender.com
+# (no trailing slash). If unset, the workflow falls back to the default below.
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'   # every 10 minutes (5 min is GitHub's hard minimum)
+  workflow_dispatch:          # manual trigger from the Actions tab
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Ping /healthz
+        env:
+          URL: ${{ vars.RENDER_URL || 'https://halford-ai-qs-workbench.onrender.com' }}
+        run: |
+          echo "Pinging $URL/healthz"
+          # -fsS: fail loudly on non-2xx; -m 60: 60s timeout (covers cold starts)
+          curl -fsS -m 60 --retry 2 --retry-delay 5 "$URL/healthz"
+          echo
