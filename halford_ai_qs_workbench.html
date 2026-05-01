@@ -455,7 +455,6 @@
       <div class="mod-tab" onclick="switchSubtab(this,'sub-scenarios')">3 · Scenarios</div>
       <div class="mod-tab" onclick="switchSubtab(this,'sub-gantt')">4 · Gantt preview</div>
       <div class="mod-tab" onclick="switchSubtab(this,'sub-cashflow')">5 · Cash flow</div>
-      <div class="mod-tab" onclick="switchSubtab(this,'sub-delay')">6 · Delay analysis</div>
     </div>
 
     <div id="sub-resource" class="sub-panel hidden">
@@ -656,26 +655,6 @@
         <div class="btn-row" style="margin-top:1rem;">
           <button class="btn btn-primary">Export Excel</button>
           <button class="btn btn-ghost" onclick="sendPrompt('How do I use the cash flow S-curve from Halford for drawdown forecasting and payment certificates?')">How to use this ↗</button>
-        </div>
-      </div>
-    </div>
-
-    <div id="sub-delay" class="sub-panel hidden">
-      <div class="panel">
-        <div class="panel-head">Forensic delay analysis</div>
-        <div class="panel-sub">Upload as-built programme to compare against as-planned baseline. AI generates EOT chronology automatically.</div>
-        <div class="upload-zone" style="margin-bottom:1rem;" onclick="sendPrompt('What as-built data formats does Halford accept for forensic delay analysis?')">
-          <div class="upload-icon">⬆</div>
-          <div class="upload-text">Upload as-built programme</div>
-          <div class="upload-hint">P6 XER · MS Project XML · CSV activity log</div>
-        </div>
-        <div class="upload-zone" onclick="sendPrompt('What as-built data formats does Halford accept for forensic delay analysis?')">
-          <div class="upload-icon">⬆</div>
-          <div class="upload-text">Upload progress records</div>
-          <div class="upload-hint">Site diaries · inspection reports · photo logs · correspondence</div>
-        </div>
-        <div class="btn-row">
-          <button class="btn btn-ghost" onclick="sendPrompt('Explain how Halford forensic delay analysis works — windows analysis, impacted as-planned, and collapsed as-built methods.')">How does delay analysis work? ↗</button>
         </div>
       </div>
     </div>
