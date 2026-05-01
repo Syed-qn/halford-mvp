@@ -61,6 +61,10 @@ app.get('/healthz', (req, res) => res.json({
   version:   require('./package.json').version,
   timestamp: new Date().toISOString(),
 }));
+
+// Root → main app HTML. The single-file UI lives one directory up
+// (path resolved by express.static below).
+app.get('/', (req, res) => res.redirect(302, '/halford_ai_qs_workbench.html'));
 // Force-download output files (don't let the browser try to render xlsx/pdf inline)
 app.use('/output', express.static(OUTPUT_DIR, {
   setHeaders: (res, filePath) => {
