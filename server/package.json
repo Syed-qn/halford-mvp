@@ -1,0 +1,30 @@
+{
+  "name": "halford-ai-qs-workbench",
+  "version": "1.0.0",
+  "description": "Halford AI QS & Planning Workbench backend",
+  "main": "index.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.40.0",
+    "axios": "^1.7.7",
+    "better-sqlite3": "^11.5.0",
+    "bullmq": "^5.34.0",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "exceljs": "^4.4.0",
+    "express": "^4.21.1",
+    "form-data": "^4.0.1",
+    "jose": "^5.9.6",
+    "minio": "^8.0.2",
+    "multer": "^1.4.5-lts.1",
+    "pdf-parse": "^1.1.4",
+    "pdfkit": "^0.15.1",
+    "pg": "^8.13.1",
+    "uuid": "^11.0.3"
+  }
+}

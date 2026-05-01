@@ -1,0 +1,1872 @@
+
+<style>
+  /* Halford workbench design tokens — defaults so the page renders
+     standalone. Override at host-page level to restyle. */
+  :root {
+    --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    --color-text-primary:    #1a1a1a;
+    --color-text-secondary:  #5a5a5a;
+    --color-text-tertiary:   #8a8a8a;
+    --color-text-info:       #0c5fb8;
+    --color-text-success:    #0e7c5a;
+    --color-text-warning:    #a05a00;
+    --color-background-primary:    #ffffff;
+    --color-background-secondary:  #f4f4f3;
+    --color-background-info:       #e8f1fb;
+    --color-background-success:    #e3f5ec;
+    --color-background-warning:    #fff3dc;
+    --color-border-primary:    #1a1a1a;
+    --color-border-secondary:  #d4d4d2;
+    --color-border-tertiary:   #e8e8e6;
+    --color-border-info:       #b6d4f2;
+    --color-border-success:    #b8e0cc;
+    --border-radius-md: 6px;
+    --border-radius-lg: 10px;
+  }
+  body { background: var(--color-background-secondary); color: var(--color-text-primary); padding: 24px; }
+  .wb { max-width: 1180px; margin: 0 auto; }
+  input, select { font-family: inherit; color: var(--color-text-primary); background: var(--color-background-primary); border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); }
+  a { color: var(--color-text-info); }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font-sans); }
+  .wb { padding: 1.5rem 0; }
+  .wb-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
+  .wb-title { font-size: 18px; font-weight: 500; color: var(--color-text-primary); }
+  .wb-subtitle { font-size: 13px; color: var(--color-text-secondary); margin-top: 2px; }
+  .proj-badge { font-size: 12px; color: var(--color-text-info); background: var(--color-background-info); padding: 4px 10px; border-radius: var(--border-radius-md); border: 0.5px solid var(--color-border-info); }
+  .step-rail { display: flex; align-items: center; gap: 0; margin-bottom: 1.5rem; overflow-x: auto; padding-bottom: 4px; }
+  .step-item { display: flex; align-items: center; gap: 0; flex-shrink: 0; }
+  .step-btn { display: flex; align-items: center; gap: 8px; padding: 7px 14px; border-radius: var(--border-radius-md); border: 0.5px solid var(--color-border-tertiary); background: var(--color-background-primary); cursor: pointer; font-size: 13px; color: var(--color-text-secondary); white-space: nowrap; transition: all 0.15s; }
+  .step-btn:hover { background: var(--color-background-secondary); color: var(--color-text-primary); }
+  .step-btn.active { background: var(--color-background-primary); border-color: var(--color-border-primary); color: var(--color-text-primary); font-weight: 500; }
+  .step-btn.done { color: var(--color-text-success); border-color: var(--color-border-success); background: var(--color-background-success); }
+  .step-num { width: 20px; height: 20px; border-radius: 50%; background: var(--color-background-secondary); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 500; color: var(--color-text-secondary); flex-shrink: 0; }
+  .step-btn.active .step-num { background: var(--color-text-primary); color: var(--color-background-primary); }
+  .step-btn.done .step-num { background: var(--color-background-success); color: var(--color-text-success); }
+  .step-arrow { width: 20px; display: flex; align-items: center; justify-content: center; color: var(--color-text-tertiary); font-size: 12px; }
+  .panel { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1.25rem; margin-bottom: 1rem; }
+  .panel-head { font-size: 14px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 4px; }
+  .panel-sub { font-size: 12px; color: var(--color-text-secondary); margin-bottom: 1rem; }
+  .upload-zone { border: 1px dashed var(--color-border-secondary); border-radius: var(--border-radius-md); padding: 2rem; text-align: center; cursor: pointer; transition: background 0.15s; }
+  .upload-zone:hover { background: var(--color-background-secondary); }
+  .upload-icon { font-size: 28px; margin-bottom: 8px; }
+  .upload-text { font-size: 14px; color: var(--color-text-primary); font-weight: 500; }
+  .upload-hint { font-size: 12px; color: var(--color-text-secondary); margin-top: 4px; }
+  .file-list { display: flex; flex-direction: column; gap: 6px; margin-top: 1rem; }
+  .file-row { display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: var(--color-background-secondary); border-radius: var(--border-radius-md); }
+  .file-icon { font-size: 14px; flex-shrink: 0; }
+  .file-name { font-size: 13px; color: var(--color-text-primary); flex: 1; }
+  .file-status { font-size: 11px; padding: 2px 8px; border-radius: 20px; }
+  .status-processing { background: var(--color-background-warning); color: var(--color-text-warning); }
+  .status-done { background: var(--color-background-success); color: var(--color-text-success); }
+  .status-queued { background: var(--color-background-secondary); color: var(--color-text-tertiary); border: 0.5px solid var(--color-border-tertiary); }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+  .metric-card { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 12px; }
+  .metric-label { font-size: 11px; color: var(--color-text-secondary); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .metric-val { font-size: 22px; font-weight: 500; color: var(--color-text-primary); }
+  .metric-unit { font-size: 12px; color: var(--color-text-secondary); margin-top: 2px; }
+  .element-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .element-table th { font-size: 11px; font-weight: 500; color: var(--color-text-secondary); text-align: left; padding: 6px 8px; border-bottom: 0.5px solid var(--color-border-tertiary); text-transform: uppercase; letter-spacing: 0.04em; }
+  .element-table td { padding: 8px; border-bottom: 0.5px solid var(--color-border-tertiary); color: var(--color-text-primary); vertical-align: middle; }
+  .element-table tr:last-child td { border-bottom: none; }
+  .element-table tr:hover td { background: var(--color-background-secondary); }
+  .conf-bar { height: 4px; border-radius: 2px; background: var(--color-background-secondary); overflow: hidden; width: 60px; }
+  .conf-fill { height: 100%; border-radius: 2px; background: #1D9E75; }
+  .tag { display: inline-block; font-size: 11px; padding: 2px 7px; border-radius: 20px; font-weight: 500; }
+  .tag-arch { background: #EEEDFE; color: #3C3489; }
+  .tag-struct { background: #E6F1FB; color: #0C447C; }
+  .tag-mep { background: #E1F5EE; color: #085041; }
+  .tag-civil { background: #FAEEDA; color: #633806; }
+  .check-col { width: 32px; }
+  input[type=checkbox] { width: 15px; height: 15px; cursor: pointer; }
+  .btn-row { display: flex; align-items: center; gap: 8px; margin-top: 1rem; }
+  .btn { padding: 7px 16px; border-radius: var(--border-radius-md); font-size: 13px; cursor: pointer; border: 0.5px solid var(--color-border-secondary); background: var(--color-background-primary); color: var(--color-text-primary); transition: all 0.15s; }
+  .btn:hover { background: var(--color-background-secondary); }
+  .btn-primary { background: var(--color-text-primary); color: var(--color-background-primary); border-color: var(--color-text-primary); }
+  .btn-primary:hover { opacity: 0.85; }
+  .btn-ghost { background: transparent; border-color: transparent; color: var(--color-text-secondary); }
+  .btn-ghost:hover { color: var(--color-text-primary); background: var(--color-background-secondary); }
+  .divider { height: 0.5px; background: var(--color-border-tertiary); margin: 1rem 0; }
+  .boq-section { margin-bottom: 1rem; }
+  .boq-section-head { font-size: 12px; font-weight: 500; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: 0.05em; padding: 6px 0; border-bottom: 0.5px solid var(--color-border-tertiary); margin-bottom: 6px; }
+  .pricing-row { display: flex; align-items: center; gap: 8px; padding: 7px 0; border-bottom: 0.5px solid var(--color-border-tertiary); }
+  .pricing-row:last-child { border-bottom: none; }
+  .pr-code { font-size: 11px; font-family: var(--font-mono); color: var(--color-text-tertiary); width: 70px; flex-shrink: 0; }
+  .pr-desc { font-size: 13px; color: var(--color-text-primary); flex: 1; }
+  .pr-qty { font-size: 13px; color: var(--color-text-secondary); width: 80px; text-align: right; flex-shrink: 0; }
+  .pr-unit { font-size: 11px; color: var(--color-text-tertiary); width: 30px; text-align: center; flex-shrink: 0; }
+  .pr-rate { font-size: 13px; color: var(--color-text-primary); width: 80px; text-align: right; flex-shrink: 0; }
+  .pr-total { font-size: 13px; font-weight: 500; color: var(--color-text-primary); width: 90px; text-align: right; flex-shrink: 0; }
+  .pr-source { font-size: 11px; color: var(--color-text-info); width: 80px; text-align: right; flex-shrink: 0; cursor: pointer; }
+  .pr-source:hover { text-decoration: underline; }
+  .export-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+  .export-card { border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); padding: 14px; cursor: pointer; transition: all 0.15s; }
+  .export-card:hover { border-color: var(--color-border-primary); background: var(--color-background-secondary); }
+  .export-card.selected { border-color: var(--color-border-info); background: var(--color-background-info); }
+  .export-icon { font-size: 20px; margin-bottom: 6px; }
+  .export-name { font-size: 13px; font-weight: 500; color: var(--color-text-primary); }
+  .export-desc { font-size: 11px; color: var(--color-text-secondary); margin-top: 3px; }
+  .progress-track { height: 6px; background: var(--color-background-secondary); border-radius: 3px; overflow: hidden; margin-top: 6px; }
+  .progress-fill { height: 100%; border-radius: 3px; background: #1D9E75; transition: width 0.4s ease; }
+  .scenario-row { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); margin-bottom: 6px; cursor: pointer; transition: all 0.15s; }
+  .scenario-row:hover { background: var(--color-background-secondary); }
+  .scenario-row.selected { border-color: var(--color-border-info); background: var(--color-background-info); }
+  .sc-label { font-size: 13px; font-weight: 500; color: var(--color-text-primary); flex: 1; }
+  .sc-dur { font-size: 12px; color: var(--color-text-secondary); width: 70px; text-align: right; }
+  .sc-cost { font-size: 12px; font-weight: 500; color: var(--color-text-primary); width: 90px; text-align: right; }
+  .sc-badge { font-size: 11px; padding: 2px 7px; border-radius: 20px; }
+  .sc-optimal { background: var(--color-background-success); color: var(--color-text-success); }
+  .sc-fast { background: var(--color-background-warning); color: var(--color-text-warning); }
+  .sc-eco { background: var(--color-background-info); color: var(--color-text-info); }
+  .gantt-wrap { overflow-x: auto; margin-top: 8px; }
+  .gantt { border-collapse: collapse; font-size: 11px; min-width: 860px; width: 100%; }
+  .gantt th { padding: 5px 6px; font-weight: 600; color: var(--color-text-secondary); text-align: left; border-bottom: 1px solid var(--color-border-tertiary); white-space: nowrap; background: var(--color-background-secondary); }
+  .gantt td { padding: 3px 6px; border-bottom: 0.5px solid var(--color-border-tertiary); color: var(--color-text-primary); vertical-align: middle; }
+  .gantt tbody tr:hover td { background: var(--color-background-secondary); }
+  .gantt-bar-cell { min-width: 420px; width: 420px; }
+  .gantt-outer { background: var(--color-background-tertiary, #e8e8e8); border-radius: 3px; height: 18px; position: relative; overflow: visible; }
+  .gantt-bar { height: 18px; border-radius: 3px; position: absolute; top: 0; opacity: 0.92; }
+  .gantt-summer { position: absolute; top: 0; bottom: 0; background: rgba(230,100,0,0.11); border-left: 1px dashed rgba(230,100,0,0.35); pointer-events: none; z-index: 0; }
+  .gantt-gridline { position: absolute; top: -4px; bottom: -4px; width: 1px; background: rgba(0,0,0,0.07); pointer-events: none; z-index: 0; }
+  .gantt-month-label { position: absolute; top: 50%; transform: translate(-50%, -50%); font-size: 9px; font-weight: 500; color: var(--color-text-tertiary); white-space: nowrap; pointer-events: none; z-index: 1; }
+  .gb-struct { background: #185FA5; }
+  .gb-arch { background: #534AB7; }
+  .gb-mep { background: #0F6E56; }
+  .gb-civil { background: #BA7517; }
+  .gb-ext { background: #993C1D; }
+  .gantt-legend { display: flex; gap: 14px; margin-top: 10px; flex-wrap: wrap; align-items: center; }
+  .gantt-legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--color-text-secondary); }
+  .gantt-legend-swatch { width: 12px; height: 12px; border-radius: 2px; flex-shrink: 0; }
+  .cashflow-wrap { margin-top: 8px; }
+  .hidden { display: none; }
+  .step-content { display: none; }
+  .step-content.active { display: block; }
+  .mod-tabs { display: flex; gap: 0; border-bottom: 0.5px solid var(--color-border-tertiary); margin-bottom: 1rem; }
+  .mod-tab { padding: 8px 16px; font-size: 13px; color: var(--color-text-secondary); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -0.5px; transition: all 0.15s; }
+  .mod-tab.active { color: var(--color-text-primary); border-bottom-color: var(--color-text-primary); font-weight: 500; }
+  .mod-tab:hover { color: var(--color-text-primary); }
+  .info-row { display: flex; align-items: flex-start; gap: 8px; padding: 8px 10px; background: var(--color-background-info); border-radius: var(--border-radius-md); margin-bottom: 10px; }
+  .info-row-text { font-size: 12px; color: var(--color-text-info); line-height: 1.5; }
+  .constraint-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 0.5px solid var(--color-border-tertiary); }
+  .constraint-row:last-child { border-bottom: none; }
+  .cr-label { font-size: 13px; color: var(--color-text-primary); flex: 1; }
+  .cr-input { width: 80px; padding: 5px 8px; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); font-size: 13px; background: var(--color-background-primary); color: var(--color-text-primary); text-align: right; }
+  .cr-unit { font-size: 12px; color: var(--color-text-secondary); width: 40px; }
+</style>
+
+<div class="wb">
+  <div class="wb-header">
+    <div>
+      <div class="wb-title">Halford AI QS & Planning Workbench</div>
+      <div class="wb-subtitle">Upload once. Get BoQ, cost plan, and resource schedule out.</div>
+    </div>
+    <div class="proj-badge">No project loaded</div>
+  </div>
+
+  <div class="step-rail" id="stepRail">
+    <div class="step-item">
+      <div class="step-btn active" onclick="goStep(1)" id="s1">
+        <div class="step-num">1</div>
+        Upload drawings
+      </div>
+    </div>
+    <div class="step-arrow">›</div>
+    <div class="step-item">
+      <div class="step-btn" onclick="goStep(2)" id="s2">
+        <div class="step-num">2</div>
+        Review elements
+      </div>
+    </div>
+    <div class="step-arrow">›</div>
+    <div class="step-item">
+      <div class="step-btn" onclick="goStep(3)" id="s3">
+        <div class="step-num">3</div>
+        Approve pricing
+      </div>
+    </div>
+    <div class="step-arrow">›</div>
+    <div class="step-item">
+      <div class="step-btn" onclick="goStep(4)" id="s4">
+        <div class="step-num">4</div>
+        Export cost outputs
+      </div>
+    </div>
+    <div class="step-arrow">›</div>
+    <div class="step-item">
+      <div class="step-btn" onclick="goStep(5)" id="s5">
+        <div class="step-num">5</div>
+        Schedule & planning
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 1 -->
+  <div class="step-content active" id="step1">
+    <div class="panel">
+      <div class="panel-head">Project setup</div>
+      <div class="panel-sub">Create or load a project before uploading drawings. All modules share this record.</div>
+      <div class="grid2" style="margin-bottom:1rem;">
+        <div>
+          <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:4px;">Project name</div>
+          <input type="text" placeholder="e.g. Bluewaters Tower B2" style="width:100%;padding:7px 10px;font-size:13px;" id="projName">
+        </div>
+        <div>
+          <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:4px;">Project type</div>
+          <select style="width:100%;padding:7px 10px;font-size:13px;" id="projType">
+            <option value="">Select type</option>
+            <optgroup label="Residential">
+              <option>Residential — villa</option>
+              <option>Residential — high rise</option>
+            </optgroup>
+            <optgroup label="Commercial">
+              <option>Commercial — office</option>
+              <option>Retail</option>
+              <option>Mixed use</option>
+            </optgroup>
+            <optgroup label="Hospitality">
+              <option>Hospitality — hotel</option>
+            </optgroup>
+            <optgroup label="Industrial / Infrastructure">
+              <option>Industrial</option>
+              <option>Infrastructure</option>
+            </optgroup>
+          </select>
+        </div>
+        <div>
+          <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:4px;">Specification level</div>
+          <select style="width:100%;padding:7px 10px;font-size:13px;" id="projSpec">
+            <option value="Economy">Economy — basic/government spec</option>
+            <option value="Standard" selected>Standard — mainstream developer</option>
+            <option value="Premium">Premium — high specification</option>
+            <option value="Luxury">Luxury — bespoke/ultra-luxury</option>
+          </select>
+        </div>
+        <div>
+          <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:4px;">Location / market</div>
+          <select style="width:100%;padding:7px 10px;font-size:13px;" id="projLoc">
+            <option value="">Select market</option>
+            <optgroup label="UAE">
+              <option value="Dubai, UAE" selected>Dubai, UAE — base (1.00)</option>
+              <option value="Abu Dhabi, UAE">Abu Dhabi, UAE (×0.97)</option>
+              <option value="Sharjah, UAE">Sharjah, UAE (×0.88)</option>
+              <option value="Ras Al Khaimah, UAE">Ras Al Khaimah, UAE (×0.82)</option>
+              <option value="Fujairah, UAE">Fujairah, UAE (×0.83)</option>
+              <option value="Ajman, UAE">Ajman, UAE (×0.80)</option>
+            </optgroup>
+            <optgroup label="Saudi Arabia">
+              <option value="Riyadh, KSA">Riyadh, KSA (×1.05)</option>
+              <option value="Jeddah, KSA">Jeddah, KSA (×1.02)</option>
+              <option value="Dammam / Al Khobar, KSA">Dammam / Al Khobar, KSA (×0.98)</option>
+              <option value="NEOM, KSA">NEOM, KSA (×1.35)</option>
+            </optgroup>
+            <optgroup label="Other GCC">
+              <option value="Doha, Qatar">Doha, Qatar (×1.08)</option>
+              <option value="Kuwait City, Kuwait">Kuwait City, Kuwait (×1.06)</option>
+              <option value="Manama, Bahrain">Manama, Bahrain (×0.92)</option>
+              <option value="Muscat, Oman">Muscat, Oman (×0.88)</option>
+            </optgroup>
+            <optgroup label="International">
+              <option value="London, UK">London, UK (×2.40)</option>
+              <option value="Manchester, UK">Manchester, UK (×1.95)</option>
+              <option value="Edinburgh, UK">Edinburgh, UK (×2.10)</option>
+              <option value="New York, USA">New York, USA (×2.80)</option>
+              <option value="Singapore">Singapore (×2.20)</option>
+            </optgroup>
+          </select>
+        </div>
+        <div>
+          <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:4px;">Currency</div>
+          <select style="width:100%;padding:7px 10px;font-size:13px;" id="projCurr">
+            <option>AED</option>
+            <option>GBP</option>
+            <option>USD</option>
+            <option>EUR</option>
+            <option>SAR</option>
+            <option>QAR</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">Upload drawings</div>
+      <div class="panel-sub">IFC, DWG, DXF, PDF, or image files. Claude AI + Autodesk Forge will parse geometry and extract elements.</div>
+      <div class="upload-zone" onclick="document.getElementById('fileInput').click()">
+        <div class="upload-icon">⬆</div>
+        <div class="upload-text">Drop files here or click to browse</div>
+        <div class="upload-hint">Supported: IFC · DWG · DXF · PDF · PNG · JPG — max 200 MB per file</div>
+      </div>
+      <input type="file" id="fileInput" multiple accept=".ifc,.dwg,.dxf,.pdf,.png,.jpg,.jpeg,.rvt" style="display:none" onchange="uploadFiles(this.files)">
+      <div class="file-list" id="fileList"></div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" id="analyseBtn" disabled onclick="runStep1()" title="Upload a drawing and wait for it to finish parsing before analysing">Analyse drawings →</button>
+      <button class="btn btn-ghost" onclick="sendPrompt('What drawing types does Halford accept and how does Autodesk Forge parse them?')">What formats are supported? ↗</button>
+    </div>
+  </div>
+
+  <!-- STEP 2 -->
+  <div class="step-content" id="step2">
+    <div class="grid3" style="margin-bottom:1rem;">
+      <div class="metric-card" title="BoQ line items are aggregated from raw drawing objects — identical instances (e.g. 248 same-size columns) become one priced row with qty=248.">
+        <div class="metric-label">BoQ line items</div>
+        <div class="metric-val" id="elemCount">0</div>
+        <div class="metric-unit">aggregated from <span id="rawObjectsCount">0</span> drawing objects</div>
+      </div>
+      <div class="metric-card"><div class="metric-label">GFA extracted</div><div class="metric-val" id="gfaVal">0</div><div class="metric-unit">m²</div></div>
+      <div class="metric-card"><div class="metric-label">Drawings parsed</div><div class="metric-val" id="dwgCount">0</div><div class="metric-unit">of <span id="dwgTotal">0</span> uploaded</div></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">Detected elements — review and approve</div>
+      <div class="panel-sub">Every element is traced to its source drawing. Untick to exclude from BoQ. Edit quantities inline.</div>
+      <div class="info-row">
+        <div class="info-row-text">AI confidence shown per row. Rows below 80% are flagged for manual check. Source drawing reference links back to the original file.</div>
+      </div>
+      <table class="element-table">
+        <thead>
+          <tr>
+            <th class="check-col"></th>
+            <th>Code</th>
+            <th>Element / description</th>
+            <th>Discipline</th>
+            <th>Qty</th>
+            <th>Unit</th>
+            <th>Confidence</th>
+            <th>Source</th>
+          </tr>
+        </thead>
+        <tbody id="elemTable"></tbody>
+      </table>
+      <div class="btn-row">
+        <button class="btn" onclick="selectAll()">Select all</button>
+        <button class="btn" onclick="deselectFlagged()">Deselect flagged</button>
+        <div style="flex:1"></div>
+        <div style="font-size:12px;color:var(--color-text-secondary);align-self:center;" id="approvedCount">0 of 0 approved</div>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="goStep(1)">← Back</button>
+      <button class="btn btn-primary" onclick="goStep(3)">Approve & price →</button>
+    </div>
+  </div>
+
+  <!-- STEP 3 -->
+  <div class="step-content" id="step3">
+    <div class="panel">
+      <div class="panel-head">Pricing engine</div>
+      <div class="panel-sub">Rates drawn from a benchmarked composite (RLB Middle East, Faithful+Gould GCC, BCIS, MoHRE WPS, supplier list prices), adjusted for location and project type. Edit any rate inline before exporting; overrides are flagged on the audit trail.</div>
+      <div class="grid2" style="margin-bottom:1rem;">
+        <div>
+          <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:4px;">Rate source</div>
+          <select style="width:100%;padding:7px 10px;font-size:13px;">
+            <option>RLB — Middle East Q1 2025</option>
+            <option>Faithful+Gould — GCC 2025</option>
+            <option>BCIS — UK Q4 2024</option>
+            <option>Custom rate library</option>
+          </select>
+        </div>
+        <div>
+          <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:4px;">Markup / OH&P (%)</div>
+          <input type="number" value="12" style="width:100%;padding:7px 10px;font-size:13px;" id="markup">
+        </div>
+      </div>
+      <div id="boqPreview"></div>
+      <div class="divider"></div>
+      <div style="display:flex;justify-content:flex-end;gap:24px;padding-top:4px;">
+        <div style="font-size:13px;color:var(--color-text-secondary);">Subtotal</div>
+        <div style="font-size:13px;font-weight:500;color:var(--color-text-primary);width:100px;text-align:right;" id="subtotalVal">AED 0</div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:24px;padding-top:6px;">
+        <div style="font-size:13px;color:var(--color-text-secondary);">OH&P</div>
+        <div style="font-size:13px;color:var(--color-text-primary);width:100px;text-align:right;" id="ohpVal">AED 0</div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:24px;padding-top:6px;border-top:0.5px solid var(--color-border-tertiary);margin-top:6px;">
+        <div style="font-size:14px;font-weight:500;color:var(--color-text-primary);">Total contract value</div>
+        <div style="font-size:15px;font-weight:500;color:var(--color-text-primary);width:100px;text-align:right;" id="totalVal">AED 0</div>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="goStep(2)">← Back</button>
+      <button class="btn btn-primary" onclick="goStep(4)">Approve pricing →</button>
+    </div>
+  </div>
+
+  <!-- STEP 4 -->
+  <div class="step-content" id="step4">
+    <div class="panel">
+      <div class="panel-head">Cost outputs</div>
+      <div class="panel-sub">Select outputs to generate. All files are traceable — every line links to a source drawing reference.</div>
+
+      <div class="export-grid" id="exportGrid">
+        <div class="export-card selected" data-id="boq" onclick="toggleExport(this)">
+          <div class="export-icon">📊</div>
+          <div class="export-name">Priced BoQ</div>
+          <div class="export-desc">Excel · NRM2 coded · full audit trail</div>
+        </div>
+        <div class="export-card selected" data-id="costplan" onclick="toggleExport(this)">
+          <div class="export-icon">📋</div>
+          <div class="export-name">Cost plan</div>
+          <div class="export-desc">PDF · elemental breakdown · RIBA stages</div>
+        </div>
+        <div class="export-card selected" data-id="benchmark" onclick="toggleExport(this)">
+          <div class="export-icon">📈</div>
+          <div class="export-name">Benchmark report</div>
+          <div class="export-desc">PDF · vs RLB / F+G · cost per m² by element</div>
+        </div>
+        <div class="export-card selected" data-id="audit" onclick="toggleExport(this)">
+          <div class="export-icon">🔍</div>
+          <div class="export-name">Audit trail</div>
+          <div class="export-desc">PDF · every BoQ line → source drawing</div>
+        </div>
+        <div class="export-card" data-id="tender" onclick="toggleExport(this)">
+          <div class="export-icon">📝</div>
+          <div class="export-name">Tender review</div>
+          <div class="export-desc">AI analysis of contractor BoQ vs estimate</div>
+        </div>
+        <div class="export-card" data-id="variation" onclick="toggleExport(this)">
+          <div class="export-icon">🔄</div>
+          <div class="export-name">Variation report</div>
+          <div class="export-desc">Upload revised drawings to delta-cost</div>
+        </div>
+      </div>
+
+      <div class="btn-row" style="margin-top:1.25rem;">
+        <button class="btn btn-primary" onclick="generateOutputs()">Generate selected outputs →</button>
+        <button class="btn" onclick="goStep(5)">Proceed to scheduling →</button>
+      </div>
+      <div id="genProgress" class="hidden" style="margin-top:1rem;">
+        <div style="font-size:13px;color:var(--color-text-secondary);margin-bottom:6px;" id="genLabel">Generating…</div>
+        <div class="progress-track"><div class="progress-fill" id="genBar" style="width:0%"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 5 -->
+  <div class="step-content" id="step5">
+    <div class="mod-tabs">
+      <div class="mod-tab active" onclick="switchSubtab(this,'sub-constraints')">1 · Constraints</div>
+      <div class="mod-tab" onclick="switchSubtab(this,'sub-resource')">2 · Resources</div>
+      <div class="mod-tab" onclick="switchSubtab(this,'sub-scenarios')">3 · Scenarios</div>
+      <div class="mod-tab" onclick="switchSubtab(this,'sub-gantt')">4 · Gantt preview</div>
+      <div class="mod-tab" onclick="switchSubtab(this,'sub-cashflow')">5 · Cash flow</div>
+      <div class="mod-tab" onclick="switchSubtab(this,'sub-delay')">6 · Delay analysis</div>
+    </div>
+
+    <div id="sub-resource" class="sub-panel hidden">
+      <div class="panel">
+        <div class="panel-head">Resource library</div>
+        <div class="panel-sub">Labour, plant and material resources matched to approved BoQ elements. Each rate is benchmarked against published market data and supplier list prices, with traceable source attribution.</div>
+
+        <div id="resource-meta-strip" style="border:0.5px solid var(--color-border-tertiary);border-radius:6px;padding:10px 14px;margin:0.5rem 0;background:var(--color-background-secondary);font-size:11px;line-height:1.55;display:none;">
+          <div style="font-weight:600;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;">Data provenance</div>
+          <div id="resource-meta-content" style="color:var(--color-text-secondary);"></div>
+        </div>
+
+        <div class="info-row" id="resource-info-row">
+          <div class="info-row-text" id="resource-info-text">Loading resources…</div>
+        </div>
+        <table class="element-table">
+          <thead><tr>
+            <th>Code</th>
+            <th>Resource</th>
+            <th>Type</th>
+            <th>Grade</th>
+            <th>Unit</th>
+            <th>Rate (AED)</th>
+            <th>Lead time</th>
+            <th>Productivity</th>
+            <th>Source</th>
+          </tr></thead>
+          <tbody id="resource-tbody">
+            <tr><td colspan="9" style="text-align:center;color:var(--color-text-tertiary);padding:1.5rem;font-style:italic;">Loading…</td></tr>
+          </tbody>
+        </table>
+        <div class="btn-row">
+          <button class="btn">+ Add resource</button>
+          <button class="btn">Import CSV</button>
+          <button class="btn">Export rate sheet</button>
+          <button class="btn btn-ghost" onclick="sendPrompt('How should I set up a resource library for a high-rise residential tower in Dubai for Halford?')">Get guidance ↗</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="sub-constraints" class="sub-panel">
+      <div class="panel">
+        <div class="panel-head">Project constraints</div>
+        <div class="panel-sub">These parameters bound the schedule. Cure lag, steel lead, and NOC period are enforced as hard predecessors — Frame cannot start until all three are satisfied.</div>
+
+        <div style="font-size:11px;font-weight:600;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:.06em;margin:1rem 0 0.4rem;">Programme</div>
+        <div class="constraint-row"><div class="cr-label">Project start date</div><input id="cs-start-date" type="date" class="cr-input" style="width:140px;" onchange="saveConstraints()"></div>
+        <div class="constraint-row"><div class="cr-label">Target completion</div><input id="cs-target-weeks" type="number" class="cr-input" value="104" onchange="saveConstraints()"> <div class="cr-unit">weeks</div></div>
+        <div class="constraint-row"><div class="cr-label">Contingency float</div><input id="cs-contingency-pct" type="number" class="cr-input" value="5" onchange="saveConstraints()"> <div class="cr-unit">%</div></div>
+        <div class="constraint-row"><div class="cr-label">Pre-construction NOC / authority period</div><input id="cs-noc-weeks" type="number" class="cr-input" value="10" onchange="saveConstraints()"> <div class="cr-unit">weeks</div></div>
+
+        <div style="font-size:11px;font-weight:600;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:.06em;margin:1rem 0 0.4rem;">Resources</div>
+        <div class="constraint-row"><div class="cr-label">Max concurrent crews on site</div><input id="cs-max-crews" type="number" class="cr-input" value="12" onchange="saveConstraints()"> <div class="cr-unit">crews</div></div>
+        <div class="constraint-row"><div class="cr-label">Working days per week</div><input id="cs-workdays" type="number" class="cr-input" value="6" onchange="saveConstraints()"> <div class="cr-unit">days</div></div>
+        <div class="constraint-row"><div class="cr-label">Max weekly spend cap</div><input id="cs-spend-cap" type="number" class="cr-input" value="850000" onchange="saveConstraints()"> <div class="cr-unit">AED</div></div>
+
+        <div style="font-size:11px;font-weight:600;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:.06em;margin:1rem 0 0.4rem;">Technical lead times</div>
+        <div class="constraint-row"><div class="cr-label">Concrete cure lag (min, Substructure → Frame)</div><input id="cs-cure-lag" type="number" class="cr-input" value="28" onchange="saveConstraints()"> <div class="cr-unit">days</div></div>
+        <div class="constraint-row"><div class="cr-label">Steel procurement lead time</div><input id="cs-steel-lead" type="number" class="cr-input" value="12" onchange="saveConstraints()"> <div class="cr-unit">weeks</div></div>
+        <div class="constraint-row"><div class="cr-label">Long-lead MEP equipment delivery</div><input id="cs-mep-lead" type="number" class="cr-input" value="16" onchange="saveConstraints()"> <div class="cr-unit">weeks</div></div>
+
+        <div style="font-size:11px;font-weight:600;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:.06em;margin:1rem 0 0.4rem;">GCC calendar factors</div>
+        <div class="constraint-row"><div class="cr-label">Ramadan productivity</div><input id="cs-ramadan-factor" type="number" class="cr-input" value="60" min="10" max="100" onchange="saveConstraints()"> <div class="cr-unit">% of normal</div></div>
+        <div class="constraint-row"><div class="cr-label">Summer (Jul – Aug) productivity</div><input id="cs-summer-factor" type="number" class="cr-input" value="75" min="10" max="100" onchange="saveConstraints()"> <div class="cr-unit">% of normal</div></div>
+
+        <div style="font-size:11px;font-weight:600;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:.06em;margin:1rem 0 0.4rem;">Milestones</div>
+        <div class="panel-sub" style="margin-bottom:0.5rem;">Key contractual dates shown as markers on the Gantt chart.</div>
+        <table class="element-table" style="margin-bottom:0.5rem;">
+          <thead><tr><th style="width:55%">Milestone name</th><th style="width:35%">Target date</th><th style="width:10%"></th></tr></thead>
+          <tbody id="milestone-tbody"></tbody>
+        </table>
+        <button class="btn" style="margin-bottom:1rem;" onclick="addMilestoneRow()">+ Add milestone</button>
+
+        <div class="btn-row">
+          <button class="btn btn-primary" onclick="switchSubtab(document.querySelectorAll('.mod-tab')[2],'sub-scenarios');runScenarios()">Run optimiser →</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="sub-scenarios" class="sub-panel hidden">
+      <div class="panel">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;">
+          <div style="flex:1;">
+            <div class="panel-head">Scenario results</div>
+            <div class="panel-sub">Time-cost trade-off (TCT) analysis: each scenario is checked against the project's hard constraints (NOC, cure lag, steel/MEP lead time, max crew, weekly spend cap) and costed as direct + indirect (preliminaries) + OH&P + risk reserve. Select a scenario to load its Gantt and S-curve.</div>
+          </div>
+          <button class="btn btn-primary" onclick="runScenarios()" style="white-space:nowrap;">Run / Refresh →</button>
+        </div>
+        <div id="scenarioList" style="margin-top:1rem;">
+          <div class="info-row"><div class="info-row-text">No scenarios yet. Adjust your inputs in <strong>1 · Constraints</strong>, then click <strong>Run / Refresh</strong> above.</div></div>
+        </div>
+        <div class="btn-row" id="scenarioBtns" style="display:none">
+          <button class="btn btn-primary" onclick="switchSubtab(document.querySelectorAll('.mod-tab')[3],'sub-gantt')">View Gantt →</button>
+          <button class="btn btn-ghost" onclick="sendPrompt('Explain the trade-offs between the four schedule scenarios generated by Halford for my project.')">Explain trade-offs ↗</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="sub-gantt" class="sub-panel hidden">
+      <div class="panel">
+        <div class="panel-head">Gantt preview — selected scenario</div>
+        <div class="panel-sub">Simplified view. Export to P6 XER, MS Project .MPP, or PDF Gantt for full detail.</div>
+        <div class="gantt-wrap">
+          <table class="gantt">
+            <thead>
+              <tr>
+                <th style="width:148px;">Activity</th>
+                <th style="width:74px;">Start</th>
+                <th style="width:74px;">Finish</th>
+                <th style="width:62px;text-align:right;">Labour hrs</th>
+                <th class="gantt-bar-cell" id="gantt-scale-header"></th>
+              </tr>
+            </thead>
+            <tbody id="gantt-tbody">
+              <tr><td colspan="5" style="text-align:center;color:var(--color-text-tertiary);padding:2rem;font-style:italic;">Run the optimiser in the Constraints tab to generate a schedule.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="gantt-legend" id="gantt-legend" style="display:none;">
+          <div class="gantt-legend-item"><div class="gantt-legend-swatch" style="background:#BA7517;"></div>Civil / Prelims</div>
+          <div class="gantt-legend-item"><div class="gantt-legend-swatch" style="background:#185FA5;"></div>Structural</div>
+          <div class="gantt-legend-item"><div class="gantt-legend-swatch" style="background:#534AB7;"></div>Architectural</div>
+          <div class="gantt-legend-item"><div class="gantt-legend-swatch" style="background:#0F6E56;"></div>MEP</div>
+          <div class="gantt-legend-item"><div class="gantt-legend-swatch" style="background:#993C1D;"></div>External</div>
+          <div class="gantt-legend-item"><div class="gantt-legend-swatch" style="background:rgba(230,100,0,0.18);border:1px dashed rgba(230,100,0,0.5);"></div>Summer (Jul–Aug)</div>
+          <div class="gantt-legend-item"><span style="font-size:13px;color:#e07b00;line-height:1;">◆</span>&nbsp;Milestone</div>
+        </div>
+        <div class="btn-row" style="margin-top:1rem;">
+          <button class="btn btn-primary">Export P6 XER</button>
+          <button class="btn">Export MS Project</button>
+          <button class="btn">Export PDF Gantt</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="sub-cashflow" class="sub-panel hidden">
+      <div class="panel">
+        <div class="panel-head">Cash flow analysis</div>
+        <div class="panel-sub">Cost-loaded schedule converted into monthly payment certificates with mobilisation advance, retention, DLP release, and VAT applied per the project's market.</div>
+
+        <!-- KPI strip -->
+        <div id="cf-kpi-strip" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:1rem;"></div>
+
+        <!-- Component breakdown KPI row -->
+        <div id="cf-component-strip" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px;"></div>
+
+        <!-- Contract terms card -->
+        <div id="cf-terms" style="margin-top:1rem;padding:10px 14px;border:0.5px solid var(--color-border-tertiary);border-radius:6px;background:var(--color-background-secondary);font-size:11px;line-height:1.6;display:none;"></div>
+
+        <!-- S-curve: planned spend vs net certified vs retention held -->
+        <div style="margin-top:1.2rem;">
+          <div style="font-size:13px;font-weight:600;margin-bottom:6px;">Cumulative drawdown — S-curve</div>
+          <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:6px;">Planned spend (gross work done) vs net certified (after retention &amp; mobilisation recovery) vs retention held.</div>
+          <div style="height:280px;position:relative;"><canvas id="cf-scurve-canvas"></canvas></div>
+        </div>
+
+        <!-- Labour / Plant / Material monthly breakdown -->
+        <div style="margin-top:1.2rem;">
+          <div style="font-size:13px;font-weight:600;margin-bottom:6px;">Monthly cost — labour, plant & material</div>
+          <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:6px;">Labour drives weekly cash needs (must be paid promptly under WPS / payroll obligations). Material is typically funded on 30–60-day supplier credit. Plant is hire-cost, weekly billing.</div>
+          <div style="height:240px;position:relative;"><canvas id="cf-component-canvas"></canvas></div>
+        </div>
+
+        <!-- Stacked monthly bar chart by section -->
+        <div style="margin-top:1.2rem;">
+          <div style="font-size:13px;font-weight:600;margin-bottom:6px;">Monthly spend by section</div>
+          <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:6px;">Stacked monthly drawdown showing which BoQ section drives each month's cash requirement.</div>
+          <div style="height:240px;position:relative;"><canvas id="cf-stack-canvas"></canvas></div>
+        </div>
+
+        <!-- Monthly payment table -->
+        <div style="margin-top:1.2rem;">
+          <div style="font-size:13px;font-weight:600;margin-bottom:6px;">Monthly payment certificate schedule</div>
+          <div style="overflow-x:auto;border:0.5px solid var(--color-border-tertiary);border-radius:6px;">
+            <table id="cf-payments-table" class="element-table" style="font-size:11px;min-width:1180px;">
+              <thead>
+                <tr>
+                  <th style="text-align:right;">M</th>
+                  <th>Date</th>
+                  <th>Phase</th>
+                  <th style="text-align:right;">Work done</th>
+                  <th style="text-align:right;color:#0c5fb8;">Labour</th>
+                  <th style="text-align:right;color:#a05a00;">Plant</th>
+                  <th style="text-align:right;color:#534AB7;">Material</th>
+                  <th style="text-align:right;">Progress</th>
+                  <th style="text-align:right;">Mob recov.</th>
+                  <th style="text-align:right;">Retention</th>
+                  <th style="text-align:right;">Net cert.</th>
+                  <th style="text-align:right;">VAT</th>
+                  <th style="text-align:right;">Net pay.</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="btn-row" style="margin-top:1rem;">
+          <button class="btn btn-primary">Export Excel</button>
+          <button class="btn btn-ghost" onclick="sendPrompt('How do I use the cash flow S-curve from Halford for drawdown forecasting and payment certificates?')">How to use this ↗</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="sub-delay" class="sub-panel hidden">
+      <div class="panel">
+        <div class="panel-head">Forensic delay analysis</div>
+        <div class="panel-sub">Upload as-built programme to compare against as-planned baseline. AI generates EOT chronology automatically.</div>
+        <div class="upload-zone" style="margin-bottom:1rem;" onclick="sendPrompt('What as-built data formats does Halford accept for forensic delay analysis?')">
+          <div class="upload-icon">⬆</div>
+          <div class="upload-text">Upload as-built programme</div>
+          <div class="upload-hint">P6 XER · MS Project XML · CSV activity log</div>
+        </div>
+        <div class="upload-zone" onclick="sendPrompt('What as-built data formats does Halford accept for forensic delay analysis?')">
+          <div class="upload-icon">⬆</div>
+          <div class="upload-text">Upload progress records</div>
+          <div class="upload-hint">Site diaries · inspection reports · photo logs · correspondence</div>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-ghost" onclick="sendPrompt('Explain how Halford forensic delay analysis works — windows analysis, impacted as-planned, and collapsed as-built methods.')">How does delay analysis work? ↗</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="btn-row" style="margin-top:0.5rem;">
+      <button class="btn btn-ghost" onclick="goStep(4)">← Back to cost outputs</button>
+    </div>
+  </div>
+</div>
+
+<!-- Autodesk Platform Services Viewer SDK — for embedded 3D model viewing -->
+<link rel="stylesheet" href="https://developer.api.autodesk.com/modelderivative/v2/viewers/7.*/style.min.css">
+<script src="https://developer.api.autodesk.com/modelderivative/v2/viewers/7.*/viewer3D.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+
+<!-- APS Viewer modal — opened on demand from "View 3D" buttons -->
+<div id="aps-viewer-modal" style="display:none;position:fixed;inset:0;background:rgba(20,20,20,0.85);z-index:9999;">
+  <div style="position:absolute;top:24px;left:24px;right:24px;bottom:24px;background:#1a1a1a;border-radius:8px;display:flex;flex-direction:column;overflow:hidden;">
+    <div style="display:flex;align-items:center;gap:12px;padding:10px 16px;background:#222;color:#eee;font:13px/1.4 -apple-system,sans-serif;border-bottom:1px solid #333;">
+      <strong id="aps-viewer-title">3D model viewer</strong>
+      <span id="aps-viewer-status" style="color:#888;font-size:11px;"></span>
+      <div style="flex:1;"></div>
+      <button onclick="closeApsViewer()" style="background:#444;color:#fff;border:0;padding:5px 14px;border-radius:4px;cursor:pointer;font-size:12px;">Close ✕</button>
+    </div>
+    <div id="aps-viewer-container" style="flex:1;position:relative;background:#0d0d0d;"></div>
+  </div>
+</div>
+<script>
+const API = ''; // same-origin (server statics this page); set to 'http://localhost:3000' if running detached
+let currentStep = 1;
+let projectId = null;
+let project = null;
+let pollingTimer = null;
+let detectedElements = [];
+let currentBoQ = null;
+let currentSchedule = null;
+let currentCashflow = null;
+let selectedScenario = 0;
+
+// ---------- API helpers ----------
+async function api(path, opts) {
+  const r = await fetch(API + path, opts);
+  if (!r.ok) {
+    // Read body ONCE as text, then try to parse — calling .json() then .text()
+    // throws "Body is disturbed or locked" because .json() consumes the stream
+    // even when parsing fails.
+    let msg = r.statusText;
+    try {
+      const txt = await r.text();
+      try { msg = JSON.parse(txt).error || txt || r.statusText; }
+      catch { msg = txt || r.statusText; }
+    } catch (e) { /* keep statusText */ }
+    throw new Error(`${r.status}: ${msg}`);
+  }
+  return r.headers.get('content-type')?.includes('json') ? r.json() : r.blob();
+}
+function fmtMoney(n) {
+  if (n == null || isNaN(n)) return '—';
+  const c = (project && project.currency) || 'AED';
+  return `${c} ${Math.round(n).toLocaleString('en-US')}`;
+}
+function setBadge(text, kind = 'info') {
+  const el = document.querySelector('.proj-badge');
+  if (!el) return;
+  el.textContent = text;
+}
+function toast(msg, isError = false) {
+  console[isError ? 'error' : 'log']('[halford]', msg);
+  if (isError) alert(msg);
+}
+
+function goStep(n) {
+  document.querySelectorAll('.step-content').forEach(el => el.classList.remove('active'));
+  document.getElementById('step' + n).classList.add('active');
+  document.querySelectorAll('.step-btn').forEach((el, i) => {
+    el.classList.remove('active');
+    if (i + 1 < n) el.classList.add('done');
+    else el.classList.remove('done');
+  });
+  document.getElementById('s' + n).classList.add('active');
+  currentStep = n;
+  if (n === 2) loadElements();
+  if (n === 3) loadPricing();
+  if (n === 5) { loadSchedule(); loadResources(); loadConstraints(); }
+}
+
+// ---------- Step 1: project + upload + analyse ----------
+async function ensureProject() {
+  if (projectId) return projectId;
+  const body = {
+    name:        document.getElementById('projName').value || 'Untitled project',
+    projectType: document.getElementById('projType').value || 'Residential — villa',
+    spec_level:  document.getElementById('projSpec').value || 'Standard',
+    location:    document.getElementById('projLoc').value  || 'Dubai, UAE',   // dropdown — always a valid key
+    currency:    document.getElementById('projCurr').value || 'AED',
+  };
+  const p = await api('/api/projects', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  project = p;
+  projectId = p.id;
+  setBadge(`${p.name} · ${p.id}`);
+  return projectId;
+}
+
+function updateAnalyseBtn(drawings) {
+  const btn = document.getElementById('analyseBtn');
+  if (!btn) return;
+  const hasParsed   = drawings.some(d => d.status === 'parsed');
+  const hasInFlight = drawings.some(d => d.status === 'queued' || d.status === 'processing');
+  if (hasInFlight) {
+    btn.disabled = true;
+    btn.textContent = 'Parsing drawings…';
+    btn.title = 'Waiting for drawings to finish parsing';
+  } else if (hasParsed) {
+    btn.disabled = false;
+    btn.textContent = 'Analyse drawings →';
+    btn.title = '';
+  } else {
+    // No drawings or all failed
+    btn.disabled = true;
+    btn.textContent = 'Analyse drawings →';
+    btn.title = 'Upload at least one drawing to continue';
+  }
+}
+
+async function uploadFiles(fileList) {
+  if (!fileList || !fileList.length) return;
+  await ensureProject();
+  const fd = new FormData();
+  for (const f of fileList) fd.append('files', f);
+  const list = document.getElementById('fileList');
+  // Optimistic UI: show files as queued and immediately lock the analyse button
+  const optimistic = [];
+  for (const f of fileList) {
+    const row = document.createElement('div');
+    row.className = 'file-row';
+    row.dataset.fname = f.name;
+    row.innerHTML = `<div class="file-icon">📄</div><div class="file-name">${f.name}</div><div class="file-status status-queued">Queued</div>`;
+    list.appendChild(row);
+    optimistic.push({ status: 'queued' });
+  }
+  updateAnalyseBtn(optimistic);
+  try {
+    await api(`/api/projects/${projectId}/upload`, { method: 'POST', body: fd });
+  } catch (e) { toast('Upload failed: ' + e.message, true); return; }
+  // Begin polling for parse status
+  if (pollingTimer) clearInterval(pollingTimer);
+  pollingTimer = setInterval(refreshDrawingStatus, 2500);
+  refreshDrawingStatus();
+}
+
+async function refreshDrawingStatus() {
+  if (!projectId) return;
+  try {
+    const p = await api(`/api/projects/${projectId}`);
+    project = p;
+    const drawings = p.drawings || [];
+    const list = document.getElementById('fileList');
+    list.innerHTML = '';
+    drawings.forEach((d, idx) => {
+      const row = document.createElement('div');
+      row.className = 'file-row';
+      let cls = 'status-queued', label = d.status || 'queued';
+      if (d.status === 'processing') { cls = 'status-processing'; label = `Processing — ${d.aps_stage || '…'}`; }
+      else if (d.status === 'parsed') {
+        cls = 'status-done';
+        const elemStr = d.element_count ? ` · ${d.element_count.toLocaleString('en-US')} drawing objects` : '';
+        label = `Parsed ✓${elemStr}`;
+      }
+      else if (d.status === 'failed') { cls = 'status-processing'; label = `Failed: ${(d.error || '').slice(0, 40)}`; }
+      const viewBtn = (d.status === 'parsed' && d.urn)
+        ? `<button class="btn" style="padding:3px 10px;font-size:11px;" onclick="openApsViewer(${idx})">View 3D ↗</button>`
+        : '';
+      row.innerHTML = `
+        <div class="file-icon">📄</div>
+        <div class="file-name">${d.name}</div>
+        <div class="file-status ${cls}">${label}</div>
+        ${viewBtn}`;
+      list.appendChild(row);
+    });
+    updateAnalyseBtn(drawings);
+    const allDone = drawings.length && drawings.every(d => d.status === 'parsed' || d.status === 'failed');
+    if (allDone && pollingTimer) { clearInterval(pollingTimer); pollingTimer = null; }
+  } catch (e) {
+    console.warn('status poll failed', e);
+  }
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// APS Viewer SDK integration — embedded 3D model viewing.
+// ──────────────────────────────────────────────────────────────────────────
+let _apsViewer = null;
+
+async function openApsViewer(drawingIdx) {
+  const modal = document.getElementById('aps-viewer-modal');
+  const title = document.getElementById('aps-viewer-title');
+  const status = document.getElementById('aps-viewer-status');
+  const container = document.getElementById('aps-viewer-container');
+  modal.style.display = 'block';
+  status.textContent = 'Loading…';
+
+  let urnInfo;
+  try {
+    urnInfo = await api(`/api/projects/${projectId}/drawings/${drawingIdx}/urn`);
+  } catch (e) {
+    status.textContent = 'Failed to load drawing: ' + e.message;
+    return;
+  }
+  title.textContent = urnInfo.name || '3D model viewer';
+  status.textContent = `${urnInfo.viewables?.length || 0} viewable(s)`;
+
+  const initOptions = {
+    env: 'AutodeskProduction2',
+    api: 'streamingV2',
+    getAccessToken: async (callback) => {
+      try {
+        const r = await api('/api/aps/viewer-token');
+        callback(r.access_token, r.expires_in);
+      } catch (e) {
+        status.textContent = 'Token failed: ' + e.message;
+      }
+    },
+  };
+
+  Autodesk.Viewing.Initializer(initOptions, () => {
+    if (_apsViewer) {
+      try { _apsViewer.finish(); } catch (e) {}
+      _apsViewer = null;
+    }
+    _apsViewer = new Autodesk.Viewing.GuiViewer3D(container, {
+      extensions: ['Autodesk.DocumentBrowser', 'Autodesk.Measure', 'Autodesk.Section', 'Autodesk.PropertiesManager'],
+    });
+    const start = _apsViewer.start();
+    if (start > 0) { status.textContent = 'Viewer failed to start'; return; }
+
+    const documentId = 'urn:' + urnInfo.urn;
+    Autodesk.Viewing.Document.load(documentId,
+      (doc) => {
+        const defaultView = doc.getRoot().getDefaultGeometry();
+        _apsViewer.loadDocumentNode(doc, defaultView).then(() => {
+          status.textContent = `${urnInfo.viewables?.length || 0} viewable(s) · use sidebar to switch view`;
+        });
+      },
+      (errCode, errMsg) => {
+        status.textContent = `Load failed (${errCode}): ${errMsg}`;
+      }
+    );
+  });
+}
+
+function closeApsViewer() {
+  const modal = document.getElementById('aps-viewer-modal');
+  if (_apsViewer) {
+    try { _apsViewer.finish(); } catch (e) {}
+    _apsViewer = null;
+  }
+  modal.style.display = 'none';
+}
+window.openApsViewer = openApsViewer;
+window.closeApsViewer = closeApsViewer;
+
+async function runStep1() {
+  await ensureProject();
+  if (!project.drawings || !project.drawings.length) {
+    toast('Upload at least one drawing before analysing.', true);
+    return;
+  }
+  // Wait for any processing to finish
+  while (project.drawings.some(d => d.status === 'processing' || d.status === 'queued')) {
+    await refreshDrawingStatus();
+    await new Promise(r => setTimeout(r, 2000));
+  }
+  const btn = event && event.target;
+  if (btn) { btn.disabled = true; btn.textContent = 'Analysing…'; }
+  try {
+    await api(`/api/projects/${projectId}/analyse`, { method: 'POST' });
+    goStep(2);
+  } catch (e) { toast('Analysis failed: ' + e.message, true); }
+  finally { if (btn) { btn.disabled = false; btn.textContent = 'Analyse drawings →'; } }
+}
+
+function sendPrompt(p) { console.log('prompt:', p); /* hook for chat sidebar */ }
+
+async function loadElements() {
+  if (!projectId) return;
+  let data;
+  try { data = await api(`/api/projects/${projectId}/elements`); }
+  catch (e) { toast('Failed to load elements: ' + e.message, true); return; }
+  detectedElements = data.elements || [];
+  document.getElementById('elemCount').textContent = detectedElements.length.toLocaleString('en-US');
+  document.getElementById('gfaVal').textContent = (data.gfa || 0).toLocaleString('en-US');
+  const parsed = (data.drawings || []).filter(d => d.status === 'parsed').length;
+  document.getElementById('dwgCount').textContent = parsed;
+  document.getElementById('dwgTotal').textContent = (data.drawings || []).length;
+  // Sum of raw drawing-object counts across all parsed drawings
+  const rawObjects = (data.drawings || []).reduce((s, d) => s + (d.element_count || 0), 0);
+  const rawEl = document.getElementById('rawObjectsCount');
+  if (rawEl) rawEl.textContent = rawObjects.toLocaleString('en-US');
+
+  const tbody = document.getElementById('elemTable');
+  tbody.innerHTML = '';
+  detectedElements.forEach((el, i) => {
+    const disc = el.discipline || 'Architectural';
+    const tagClass = disc === 'Structural' ? 'tag-struct' : disc === 'MEP' ? 'tag-mep' : disc === 'Civil' ? 'tag-civil' : 'tag-arch';
+    const conf = el.confidence ?? 90;
+    const flagged = conf < 80;
+    const checked = el.approved !== false;
+    const tr = document.createElement('tr');
+    tr.dataset.index = i;
+    tr.innerHTML = `
+      <td class="check-col"><input type="checkbox" ${checked ? 'checked' : ''} id="chk${i}" onchange="toggleElement(${i}, this.checked)"></td>
+      <td style="font-family:var(--font-mono);font-size:11px;color:var(--color-text-tertiary);">${el.code}</td>
+      <td style="font-size:13px;color:var(--color-text-primary);">${escapeHtml(el.desc)}${flagged ? ' <span style="font-size:10px;color:var(--color-text-warning);">⚠ review</span>' : ''}</td>
+      <td><span class="tag ${tagClass}">${disc}</span></td>
+      <td style="font-size:13px;"><input type="number" value="${el.qty}" data-i="${i}" onchange="updateQty(${i}, this.value)" style="width:80px;padding:3px 6px;font-size:12px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-primary);text-align:right;"></td>
+      <td style="font-size:12px;color:var(--color-text-secondary);">${el.unit}</td>
+      <td><div class="conf-bar"><div class="conf-fill" style="width:${conf}%"></div></div><div style="font-size:10px;color:var(--color-text-tertiary);margin-top:2px;">${conf}%</div></td>
+      <td style="font-size:11px;color:var(--color-text-info);cursor:pointer;" title="${el.source}">${(el.source || '').split(',')[0]}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+  updateApprovedCount();
+}
+
+function escapeHtml(s) { return String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+async function toggleElement(i, checked) {
+  detectedElements[i].approved = checked;
+  updateApprovedCount();
+  await persistElements();
+}
+async function updateQty(i, qty) {
+  detectedElements[i].qty = parseFloat(qty) || 0;
+  await persistElements();
+}
+async function persistElements() {
+  if (!projectId) return;
+  await api(`/api/projects/${projectId}/elements`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ elements: detectedElements }),
+  });
+}
+
+function updateApprovedCount() {
+  const total = detectedElements.length;
+  const approved = detectedElements.filter(e => e.approved !== false).length;
+  document.getElementById('approvedCount').textContent = approved + ' of ' + total + ' approved';
+}
+
+function selectAll() {
+  detectedElements.forEach((e, i) => {
+    e.approved = true;
+    const c = document.getElementById('chk' + i);
+    if (c) c.checked = true;
+  });
+  updateApprovedCount();
+  persistElements();
+}
+
+function deselectFlagged() {
+  detectedElements.forEach((e, i) => {
+    if ((e.confidence ?? 100) < 80) {
+      e.approved = false;
+      const c = document.getElementById('chk' + i);
+      if (c) c.checked = false;
+    }
+  });
+  updateApprovedCount();
+  persistElements();
+}
+
+async function loadPricing() {
+  if (!projectId) return;
+  const markup = parseFloat(document.getElementById('markup').value || 12);
+  let boq;
+  try { boq = await api(`/api/projects/${projectId}/boq?markup=${markup}`); }
+  catch (e) { toast('Failed to load BoQ: ' + e.message, true); return; }
+  currentBoQ = boq;
+  renderPricing(boq);
+}
+
+function renderPricing(boq) {
+  const container = document.getElementById('boqPreview');
+  container.innerHTML = '';
+  for (const section of boq.sections) {
+    const sec = document.createElement('div');
+    sec.className = 'boq-section';
+    sec.innerHTML = `<div class="boq-section-head">${section.name} — ${fmtMoney(section.subtotal)}</div>`;
+    section.items.forEach(item => {
+      const row = document.createElement('div');
+      row.className = 'pricing-row';
+      row.innerHTML = `
+        <div class="pr-code">${item.code}</div>
+        <div class="pr-desc">${escapeHtml(item.desc)}</div>
+        <div class="pr-qty">${item.qty.toLocaleString('en-US')}</div>
+        <div class="pr-unit">${item.unit}</div>
+        <div class="pr-rate"><input type="number" value="${item.rate}" data-code="${item.code}" onchange="updateRate('${item.code}', this.value)" style="width:75px;padding:3px 6px;font-size:12px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-primary);text-align:right;"></div>
+        <div class="pr-total">${fmtMoney(item.extended)}</div>
+        <div class="pr-source" title="${escapeHtml(item.source||'')}">${(item.source || '').split(',')[0]}</div>
+      `;
+      sec.appendChild(row);
+    });
+    container.appendChild(sec);
+  }
+  document.getElementById('subtotalVal').textContent = fmtMoney(boq.subtotal);
+  document.getElementById('ohpVal').textContent = fmtMoney(boq.ohp);
+  document.getElementById('totalVal').textContent = fmtMoney(boq.total);
+}
+
+async function updateRate(code, rate) {
+  await api(`/api/projects/${projectId}/pricing`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ rates: [{ code, rate: parseFloat(rate) }] }),
+  });
+  loadPricing();
+}
+
+document.addEventListener('change', async e => {
+  if (e.target.id === 'markup' && projectId) {
+    const v = parseFloat(e.target.value || 12);
+    await api(`/api/projects/${projectId}/pricing`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ markup: v }),
+    });
+    loadPricing();
+  }
+});
+
+function toggleExport(el) { el.classList.toggle('selected'); }
+
+const EXPORT_MAP = {
+  boq:       { path: 'export/boq',       label: 'Priced BoQ' },
+  costplan:  { path: 'export/cost-plan', label: 'Cost Plan' },
+  benchmark: { path: 'export/benchmark', label: 'Benchmark Report' },
+  audit:     { path: 'export/audit',     label: 'Audit Trail' },
+  tender:    { path: 'export/tender',    label: 'Tender Review' },
+  variation: { path: 'export/variation', label: 'Variation Report' },
+};
+
+async function generateOutputs() {
+  if (!projectId) { toast('No project loaded.', true); return; }
+  const selected = Array.from(document.querySelectorAll('.export-card.selected')).map(el => el.dataset.id);
+  const prog = document.getElementById('genProgress');
+  const bar = document.getElementById('genBar');
+  const label = document.getElementById('genLabel');
+  prog.classList.remove('hidden');
+  bar.style.width = '5%';
+
+  const links = [];
+  for (let i = 0; i < selected.length; i++) {
+    const id = selected[i];
+    const def = EXPORT_MAP[id];
+    if (!def) continue;
+    label.textContent = `Generating ${def.label}…`;
+    try {
+      const r = await api(`/api/projects/${projectId}/${def.path}`, { method: 'POST' });
+      links.push({ name: def.label, url: r.url, file: r.file });
+    } catch (e) {
+      toast(`${def.label} failed: ${e.message}`, true);
+    }
+    bar.style.width = `${5 + ((i + 1) / selected.length) * 95}%`;
+  }
+  label.innerHTML = links.length
+    ? links.map(l => `<a href="${l.url}" download="${l.file}" target="_blank" style="color:var(--color-text-info);text-decoration:underline;margin-right:14px;">⬇ ${l.name}</a>`).join('')
+    : 'No outputs generated.';
+}
+
+function switchSubtab(tabEl, targetId) {
+  document.querySelectorAll('.mod-tab').forEach(t => t.classList.remove('active'));
+  if (tabEl) tabEl.classList.add('active');
+  document.querySelectorAll('.sub-panel').forEach(p => p.classList.add('hidden'));
+  const panel = document.getElementById(targetId);
+  if (panel) panel.classList.remove('hidden');
+  if (targetId === 'sub-cashflow') setTimeout(drawCashflow, 100);
+  if (targetId === 'sub-gantt') renderGantt();
+  if (targetId === 'sub-resource') loadResources();
+  if (targetId === 'sub-constraints') loadConstraints();
+  if (targetId === 'sub-scenarios')   loadScenarios();
+}
+
+// Re-render previously computed scenarios (so they persist when navigating away & back)
+async function loadScenarios() {
+  if (!projectId) return;
+  try {
+    const p = await api(`/api/projects/${projectId}`);
+    if (p.scenarios && p.scenarios.length) {
+      // Synthesize the same shape as /optimize would return so we can reuse renderer
+      renderScenarioList({ scenarios: p.scenarios, method: p.optimize_method || 'cached from last run — click "Run / Refresh" to recompute' });
+    }
+  } catch (e) { /* leave empty state */ }
+}
+
+async function loadResources() {
+  if (!projectId) {
+    try {
+      const rates = await api('/api/rates');
+      renderResourceTable(Object.values(rates.resources || {}), 0, 0, rates._meta);
+    } catch (e) { /* ignore */ }
+    return;
+  }
+  try {
+    const data = await api(`/api/projects/${projectId}/resources`);
+    renderResourceTable(data.resources, data.used_count, data.total_labour_hrs, data.meta);
+  } catch (e) {
+    document.getElementById('resource-info-text').textContent = 'Could not load resources — ' + e.message;
+  }
+}
+
+function renderResourceTable(resources, usedCount, totalLabourHrs, meta) {
+  const typeTagMap = { Labour: 'tag-arch', Plant: 'tag-civil', Material: 'tag-mep' };
+  const tbody  = document.getElementById('resource-tbody');
+  const infoEl = document.getElementById('resource-info-text');
+  const metaStrip   = document.getElementById('resource-meta-strip');
+  const metaContent = document.getElementById('resource-meta-content');
+
+  // Provenance strip
+  if (meta && metaStrip && metaContent) {
+    const sources = (meta.resource_sources || []).map(s => `<li>${s}</li>`).join('');
+    metaContent.innerHTML = `
+      <div style="margin-bottom:6px;"><strong>Effective:</strong> ${meta.last_updated || '—'} &nbsp;·&nbsp; <strong>Currency basis:</strong> ${meta.currency_basis || meta.currency || 'AED'} &nbsp;·&nbsp; <strong>Review cycle:</strong> ${meta.review_cycle || 'Quarterly'}</div>
+      <div><strong>Sources:</strong></div>
+      <ul style="margin:4px 0 0 18px;padding:0;">${sources}</ul>`;
+    metaStrip.style.display = 'block';
+  }
+
+  if (!resources || !resources.length) {
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--color-text-tertiary);padding:1.5rem;font-style:italic;">No resources found.</td></tr>';
+    return;
+  }
+
+  const active = resources.filter(r => r.used !== false);
+  if (infoEl) {
+    const labourStr = totalLabourHrs > 0 ? ` · ${Math.round(totalLabourHrs).toLocaleString('en-US')} estimated labour-hrs` : '';
+    const dateStr   = meta?.last_updated ? ` · rates effective ${meta.last_updated}` : '';
+    infoEl.textContent = `${active.length} of ${resources.length} resources matched to approved elements${labourStr}${dateStr}. Rates editable inline — overrides flagged on export.`;
+  }
+
+  // Sort: Labour → Plant → Material; within group by code
+  const order = { Labour: 0, Plant: 1, Material: 2 };
+  resources = resources.slice().sort((a, b) => {
+    const t = (order[a.type] ?? 9) - (order[b.type] ?? 9);
+    return t !== 0 ? t : (a.code || '').localeCompare(b.code || '');
+  });
+
+  tbody.innerHTML = resources.map(r => {
+    const tag = typeTagMap[r.type] || 'tag-arch';
+    const dim = r.used === false ? 'opacity:0.4;' : '';
+    const lt  = (r.lead_time_weeks != null)
+      ? (r.lead_time_weeks === 0 ? 'On call' : r.lead_time_weeks + ' wk')
+      : '—';
+    const grade  = r.grade || (r.type === 'Labour' ? '—' : '');
+    const source = r.source ? r.source : 'Internal database';
+    return `<tr style="${dim}">
+      <td style="font-family:var(--font-mono);font-size:11px;color:var(--color-text-tertiary);">${r.code}</td>
+      <td>${r.desc}</td>
+      <td><span class="tag ${tag}">${r.type}</span></td>
+      <td style="font-size:11px;color:var(--color-text-secondary);">${grade}</td>
+      <td>${r.unit}</td>
+      <td><input type="number" class="cr-input" value="${r.rate}" style="width:80px;" onchange="updateResourceRate('${r.code}',this.value)"></td>
+      <td style="font-size:11px;color:var(--color-text-secondary);">${lt}</td>
+      <td style="font-size:11px;color:var(--color-text-secondary);">${r.productivity || '—'}</td>
+      <td style="font-size:11px;color:var(--color-text-secondary);" title="${source}">${source}</td>
+    </tr>`;
+  }).join('');
+}
+
+async function updateResourceRate(code, value) {
+  // Store rate override on the project so exports use the updated rate
+  if (!projectId) return;
+  const overrides = (project && project.rate_overrides) || {};
+  overrides[code] = parseFloat(value);
+  try {
+    const updated = await api(`/api/projects/${projectId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ rate_overrides: overrides }),
+    });
+    if (project) project.rate_overrides = updated.rate_overrides;
+  } catch (e) { /* non-critical */ }
+}
+
+function addMilestoneRow(name = '', date = '') {
+  const tbody = document.getElementById('milestone-tbody');
+  if (!tbody) return;
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td><input type="text" class="cr-input" style="width:100%;box-sizing:border-box;" placeholder="e.g. Superstructure complete" value="${name}" onchange="saveConstraints()"></td>
+    <td><input type="date" class="cr-input" value="${date}" onchange="saveConstraints()"></td>
+    <td><button class="btn" style="padding:2px 8px;font-size:11px;" onclick="this.closest('tr').remove();saveConstraints()">✕</button></td>
+  `;
+  tbody.appendChild(tr);
+}
+
+function getMilestones() {
+  const rows = document.querySelectorAll('#milestone-tbody tr');
+  const milestones = [];
+  for (const tr of rows) {
+    const inputs = tr.querySelectorAll('input');
+    const n = inputs[0]?.value?.trim();
+    const d = inputs[1]?.value;
+    if (n || d) milestones.push({ name: n || '', date: d || '' });
+  }
+  return milestones;
+}
+
+async function loadConstraints() {
+  if (!projectId) return;
+  try {
+    const p = await api(`/api/projects/${projectId}`);
+    const cs = p.constraints || {};
+    const set = (id, val) => { if (val != null && document.getElementById(id)) document.getElementById(id).value = val; };
+    set('cs-start-date',      cs.start_date);
+    set('cs-target-weeks',    cs.target_weeks);
+    set('cs-contingency-pct', cs.contingency_pct);
+    set('cs-noc-weeks',       cs.noc_weeks);
+    set('cs-max-crews',       cs.max_crews);
+    set('cs-workdays',        cs.workdays_per_week);
+    set('cs-spend-cap',       cs.max_weekly_spend);
+    set('cs-cure-lag',        cs.cure_lag_days);
+    set('cs-steel-lead',      cs.steel_lead_weeks);
+    set('cs-mep-lead',        cs.mep_lead_weeks);
+    set('cs-ramadan-factor',  cs.ramadan_factor);
+    set('cs-summer-factor',   cs.summer_factor);
+    const tbody = document.getElementById('milestone-tbody');
+    if (tbody) {
+      tbody.innerHTML = '';
+      for (const m of (cs.milestones || [])) addMilestoneRow(m.name, m.date);
+    }
+  } catch (e) { /* use defaults */ }
+}
+
+async function saveConstraints() {
+  if (!projectId) return;
+  const num  = (id, def) => parseFloat(document.getElementById(id)?.value) || def;
+  const str  = (id)      => document.getElementById(id)?.value || null;
+  const cs = {
+    start_date:        str('cs-start-date'),
+    target_weeks:      num('cs-target-weeks',    104),
+    contingency_pct:   num('cs-contingency-pct',   5),
+    noc_weeks:         num('cs-noc-weeks',         10),
+    max_crews:         num('cs-max-crews',         12),
+    workdays_per_week: num('cs-workdays',           6),
+    max_weekly_spend:  num('cs-spend-cap',     850000),
+    cure_lag_days:     num('cs-cure-lag',          28),
+    steel_lead_weeks:  num('cs-steel-lead',        12),
+    mep_lead_weeks:    num('cs-mep-lead',          16),
+    ramadan_factor:    num('cs-ramadan-factor',    60),
+    summer_factor:     num('cs-summer-factor',     75),
+    milestones:        getMilestones(),
+  };
+  try {
+    await api(`/api/projects/${projectId}/constraints`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(cs),
+    });
+  } catch (e) { /* non-critical */ }
+}
+
+async function loadSchedule() {
+  if (!projectId) return;
+  try {
+    const r = await api(`/api/projects/${projectId}/schedule`);
+    currentSchedule = r.schedule;
+    currentCashflow = r.cashflow;
+    setTimeout(drawCashflow, 200);
+    renderGantt();
+  } catch (e) { /* schedule not yet computed */ }
+}
+
+async function runScenarios() {
+  if (!projectId) { toast('No project loaded.', true); return; }
+  await saveConstraints();
+
+  const list = document.getElementById('scenarioList');
+  list.innerHTML = '<div class="info-row"><div class="info-row-text">Running time-cost trade-off analysis…</div></div>';
+  let r;
+  try { r = await api(`/api/projects/${projectId}/optimize`, { method: 'POST' }); }
+  catch (e) {
+    list.innerHTML = `<div class="info-row" style="background:#fde9e7;border-left:3px solid #c0392b;"><div class="info-row-text" style="color:#7a1e15;">Optimiser failed: ${e.message}</div></div>`;
+    toast('Optimiser failed: ' + e.message, true);
+    return;
+  }
+  if (!r.scenarios || !r.scenarios.length) {
+    list.innerHTML = '<div class="info-row"><div class="info-row-text">Optimiser returned no scenarios. Check that you have approved elements and constraints set.</div></div>';
+    return;
+  }
+  renderScenarioList(r);
+}
+
+function renderScenarioList(r) {
+  const list = document.getElementById('scenarioList');
+  if (!list) return;
+  list.innerHTML = '';
+  const badgeMap = { 'Optimal': 'sc-optimal', 'Fastest': 'sc-fast', 'Lowest direct': 'sc-eco' };
+
+  // Method strip
+  if (r.method) {
+    const methodEl = document.createElement('div');
+    methodEl.style.cssText = 'font-size:11px;color:var(--color-text-tertiary);margin-bottom:10px;font-style:italic;';
+    methodEl.textContent = 'Method: ' + r.method;
+    list.appendChild(methodEl);
+  }
+
+  r.scenarios.forEach((sc, i) => {
+    const row = document.createElement('div');
+    row.className = 'scenario-row' + (i === 0 ? ' selected' : '');
+    row.style.cssText = 'flex-direction:column;align-items:stretch;padding:14px;cursor:pointer;';
+
+    const badgeCls = badgeMap[sc.badge] || '';
+    const cb = sc.cost_breakdown || {};
+    const compliance = sc.constraints_passed
+      ? '<span style="color:#0e7c5a;font-weight:600;">✓ Constraints met</span>'
+      : `<span style="color:#c0392b;font-weight:600;" title="${(sc.violations||[]).map(v=>v.detail).join(' · ')}">✗ ${sc.violations.length} violation${sc.violations.length>1?'s':''}</span>`;
+
+    const violationsHtml = sc.violations && sc.violations.length
+      ? `<div style="margin-top:8px;padding:6px 10px;background:#fde9e7;border-left:3px solid #c0392b;font-size:11px;color:#7a1e15;border-radius:3px;">
+           ${sc.violations.map(v => `<div><strong>${v.check}:</strong> ${v.detail}</div>`).join('')}
+         </div>`
+      : '';
+
+    row.innerHTML = `
+      <div style="display:flex;align-items:flex-start;gap:10px;">
+        <input type="radio" name="scenario" ${i === 0 ? 'checked' : ''} style="cursor:pointer;margin-top:3px;">
+        <div style="flex:1;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div style="font-weight:600;font-size:13px;">${sc.label}</div>
+            ${sc.badge ? `<div class="sc-badge ${badgeCls}">${sc.badge}</div>` : ''}
+          </div>
+          <div style="font-size:11px;color:var(--color-text-secondary);margin-top:3px;">${sc.description || ''}</div>
+        </div>
+        <div style="text-align:right;min-width:170px;">
+          <div style="font-weight:600;font-size:14px;">${fmtMoney(sc.cost)}</div>
+          <div style="font-size:10px;color:var(--color-text-tertiary);margin-top:2px;">P10 ${fmtMoney(sc.p10)} · P90 ${fmtMoney(sc.p90)}</div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:10px;font-size:11px;">
+        <div>
+          <div style="color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:.04em;font-size:10px;">Duration</div>
+          <div style="font-weight:500;margin-top:1px;">${sc.duration_weeks} wk</div>
+          <div style="color:var(--color-text-tertiary);font-size:10px;">${sc.compression_pct > 0 ? `−${sc.compression_pct}% vs natural` : sc.compression_pct < 0 ? `+${Math.abs(sc.compression_pct)}% vs natural` : 'natural'}</div>
+        </div>
+        <div>
+          <div style="color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:.04em;font-size:10px;">Peak crew</div>
+          <div style="font-weight:500;margin-top:1px;">${sc.peak_crew}${sc.peak_crew > sc.max_crews ? ` <span style="color:#c0392b;">/ ${sc.max_crews} cap</span>` : ` / ${sc.max_crews}`}</div>
+          <div style="color:var(--color-text-tertiary);font-size:10px;">${sc.workdays_per_week}d/wk</div>
+        </div>
+        <div>
+          <div style="color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:.04em;font-size:10px;">Peak weekly spend</div>
+          <div style="font-weight:500;margin-top:1px;">${fmtMoney(sc.peak_weekly_spend)}</div>
+          <div style="color:var(--color-text-tertiary);font-size:10px;">${sc.max_weekly_spend ? `cap ${fmtMoney(sc.max_weekly_spend)}` : 'no cap'}</div>
+        </div>
+        <div>
+          <div style="color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:.04em;font-size:10px;">Compliance</div>
+          <div style="font-weight:500;margin-top:1px;">${compliance}</div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:8px;font-size:11px;padding-top:8px;border-top:0.5px dashed var(--color-border-tertiary);">
+        <div><span style="color:var(--color-text-tertiary);">Direct</span> <strong>${fmtMoney(cb.direct)}</strong>${sc.acceleration_premium_pct > 0 ? ` <span style="color:#a05a00;">+${sc.acceleration_premium_pct}%</span>` : ''}</div>
+        <div><span style="color:var(--color-text-tertiary);">OH&P</span> <strong>${fmtMoney(cb.ohp)}</strong></div>
+        <div><span style="color:var(--color-text-tertiary);">Indirect / prelims</span> <strong>${fmtMoney(cb.indirect)}</strong></div>
+        <div><span style="color:var(--color-text-tertiary);">Risk reserve</span> <strong>${fmtMoney(cb.risk)}</strong></div>
+      </div>
+
+      ${violationsHtml}
+    `;
+
+    row.addEventListener('click', async () => {
+      document.querySelectorAll('.scenario-row').forEach(rr => rr.classList.remove('selected'));
+      row.classList.add('selected');
+      row.querySelector('input[type=radio]').checked = true;
+      selectedScenario = i;
+      const sched = await api(`/api/projects/${projectId}/schedule`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ scenario_index: i }),
+      });
+      currentSchedule = sched.schedule;
+      currentCashflow = sched.cashflow;
+      renderGantt();
+      drawCashflow();
+    });
+    list.appendChild(row);
+  });
+
+  // Critical-path footer (same for all scenarios — predecessor chain)
+  if (r.scenarios.length && r.scenarios[0].critical_path) {
+    const cp = r.scenarios[0].critical_path;
+    const cpEl = document.createElement('div');
+    cpEl.style.cssText = 'margin-top:14px;padding:10px 12px;background:var(--color-background-secondary);border-radius:6px;font-size:11px;color:var(--color-text-secondary);line-height:1.6;';
+    cpEl.innerHTML = `<strong style="color:var(--color-text-primary);">Critical path:</strong> ${cp.join(' → ')}`;
+    list.appendChild(cpEl);
+  }
+
+  document.getElementById('scenarioBtns').style.display = 'flex';
+  document.querySelectorAll('.scenario-row')[0].click();
+}
+
+function renderGantt() {
+  const tbody = document.getElementById('gantt-tbody');
+  if (!tbody) return;
+  if (!currentSchedule) {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--color-text-tertiary);padding:2rem;font-style:italic;">Run the optimiser in the Constraints tab to generate a schedule.</td></tr>';
+    return;
+  }
+
+  const total       = currentSchedule.total_weeks;
+  const startDateStr = currentSchedule.start_date;
+  const totalMs     = total * 7 * 86400000;
+  const startMs     = startDateStr ? new Date(startDateStr).getTime() : null;
+
+  // Calendar date N weeks from project start
+  function weekDate(wk) {
+    if (!startMs) return `Wk ${wk}`;
+    const d = new Date(startMs + (wk - 1) * 7 * 86400000);
+    return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: '2-digit' });
+  }
+
+  // Left% for an absolute Date object
+  function datePct(dateMs) {
+    if (!startMs) return 0;
+    return Math.min(100, Math.max(0, ((dateMs - startMs) / totalMs) * 100));
+  }
+
+  // Month boundary markers (left%, label)
+  const monthMarkers = (() => {
+    if (!startMs) return [];
+    const out = [];
+    const end = startMs + totalMs;
+    const start = new Date(startMs);
+    const cur = new Date(start.getFullYear(), start.getMonth() + 1, 1);
+    while (cur.getTime() < end) {
+      out.push({
+        pct: datePct(cur.getTime()),
+        label: cur.toLocaleDateString('en-GB', { month: 'short', year: '2-digit' }),
+      });
+      cur.setMonth(cur.getMonth() + 1);
+    }
+    return out;
+  })();
+
+  // Summer shading spans (July 1 – Aug 31, each year)
+  const summerSpans = (() => {
+    if (!startMs) return [];
+    const spans = [];
+    const endMs = startMs + totalMs;
+    const startYear = new Date(startMs).getFullYear();
+    const endYear   = new Date(endMs).getFullYear();
+    for (let y = startYear; y <= endYear; y++) {
+      const s = new Date(y, 6, 1).getTime();
+      const e = new Date(y, 7, 31, 23, 59).getTime();
+      if (e < startMs || s > endMs) continue;
+      const cs = Math.max(s, startMs);
+      const ce = Math.min(e, endMs);
+      spans.push({ left: datePct(cs), width: datePct(ce) - datePct(cs) });
+    }
+    return spans;
+  })();
+
+  // Milestone positions
+  const milestones = getMilestones().filter(m => m.date && startMs);
+  const milestoneData = milestones.map(m => ({
+    name: m.name,
+    ms: new Date(m.date).getTime(),
+    pct: datePct(new Date(m.date).getTime()),
+    week: Math.max(1, Math.round((new Date(m.date).getTime() - startMs) / (7 * 86400000)) + 1),
+  }));
+
+  // Reusable HTML: summer shading + month gridlines (rendered in every bar cell)
+  const summerHtml  = summerSpans.map(s =>
+    `<div class="gantt-summer" style="left:${s.left.toFixed(1)}%;width:${s.width.toFixed(1)}%;"></div>`
+  ).join('');
+  const gridHtml = monthMarkers.map(m =>
+    `<div class="gantt-gridline" style="left:${m.pct.toFixed(1)}%;"></div>`
+  ).join('');
+
+  // Scale header: month labels
+  const headerCell = document.getElementById('gantt-scale-header');
+  if (headerCell) {
+    const labelHtml = monthMarkers.map(m =>
+      `<span class="gantt-month-label" style="left:${m.pct.toFixed(1)}%;">${m.label}</span>`
+    ).join('');
+    headerCell.innerHTML = `<div class="gantt-outer" style="background:transparent;overflow:visible;">${gridHtml}${labelHtml}</div>`;
+  }
+
+  tbody.innerHTML = '';
+  const colorMap = { struct: 'gb-struct', arch: 'gb-arch', mep: 'gb-mep', civil: 'gb-civil', ext: 'gb-ext' };
+
+  for (const a of currentSchedule.activities) {
+    const left  = ((a.start_week - 1) / total) * 100;
+    const width = Math.max(1.5, (a.duration  / total) * 100);
+    const cls   = colorMap[a.color] || 'gb-struct';
+    const hrsStr = a.labour_hrs > 0 ? a.labour_hrs.toLocaleString('en-US') : '—';
+
+    const mMarkers = milestoneData
+      .filter(m => m.week >= a.start_week && m.week <= a.end_week)
+      .map(m => `<span title="${m.name}" style="position:absolute;left:${m.pct.toFixed(1)}%;top:-5px;font-size:13px;line-height:1;color:#e07b00;transform:translateX(-50%);z-index:3;">◆</span>`)
+      .join('');
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${a.name}</td>
+      <td style="white-space:nowrap;font-variant-numeric:tabular-nums;">${weekDate(a.start_week)}</td>
+      <td style="white-space:nowrap;font-variant-numeric:tabular-nums;">${weekDate(a.end_week)}</td>
+      <td style="text-align:right;font-variant-numeric:tabular-nums;">${hrsStr}</td>
+      <td class="gantt-bar-cell">
+        <div class="gantt-outer">
+          ${summerHtml}${gridHtml}
+          <div class="gantt-bar ${cls}" style="left:${left.toFixed(1)}%;width:${width.toFixed(1)}%;z-index:1;"></div>
+          ${mMarkers}
+        </div>
+      </td>`;
+    tbody.appendChild(tr);
+  }
+
+  // Milestones that fall outside all activity date ranges
+  const unmapped = milestoneData.filter(m =>
+    !currentSchedule.activities.some(a => m.week >= a.start_week && m.week <= a.end_week)
+  );
+  if (unmapped.length) {
+    const mHtml = unmapped.map(m =>
+      `<span title="${m.name}" style="position:absolute;left:${Math.min(98,m.pct).toFixed(1)}%;top:-5px;font-size:13px;color:#e07b00;transform:translateX(-50%);z-index:3;">◆</span>`
+    ).join('');
+    const tr = document.createElement('tr');
+    tr.style.opacity = '0.65';
+    tr.innerHTML = `<td colspan="4" style="font-style:italic;color:var(--color-text-tertiary);">Milestones</td>
+      <td class="gantt-bar-cell"><div class="gantt-outer">${summerHtml}${gridHtml}${mHtml}</div></td>`;
+    tbody.appendChild(tr);
+  }
+
+  // Summary footer
+  if (currentSchedule.natural_weeks) {
+    const totHrs = currentSchedule.total_labour_hrs ? currentSchedule.total_labour_hrs.toLocaleString('en-US') : '—';
+    const endDateStr = startMs ? weekDate(total) : `${total} wk`;
+    const tr = document.createElement('tr');
+    tr.style.cssText = 'font-size:11px;color:var(--color-text-tertiary);border-top:1.5px solid var(--color-border);';
+    tr.innerHTML = `
+      <td colspan="3" style="padding:6px 6px 4px;">
+        Natural ${currentSchedule.natural_weeks} wk + ${currentSchedule.contingency_weeks} wk contingency
+        = <strong>${total} wk</strong> &nbsp;·&nbsp; Completion: <strong>${endDateStr}</strong>
+        ${currentSchedule.noc_weeks ? ` &nbsp;·&nbsp; NOC: ${currentSchedule.noc_weeks} wk` : ''}
+      </td>
+      <td style="text-align:right;padding:6px 6px 4px;">${totHrs}</td>
+      <td></td>`;
+    tbody.appendChild(tr);
+  }
+
+  // Show legend
+  const legend = document.getElementById('gantt-legend');
+  if (legend) legend.style.display = 'flex';
+}
+
+let cfSCurveChart    = null;
+let cfStackChart     = null;
+let cfComponentChart = null;
+const CF_SECTION_COLOURS = {
+  'Preliminaries': '#BA7517',
+  'Substructure':  '#185FA5',
+  'Frame':         '#2E7DC6',
+  'Roof':          '#7A8DBE',
+  'Envelope':      '#534AB7',
+  'Internal walls':'#7A6FC3',
+  'Finishes':      '#A55CB6',
+  'MEP':           '#0F6E56',
+  'External':      '#993C1D',
+  'Other':         '#888888',
+};
+
+function drawCashflow() {
+  if (!window.Chart) return;
+  const cf = currentCashflow;
+  const currency = (project && project.currency) || 'AED';
+  const fmt = n => `${currency} ${Math.round(n).toLocaleString('en-US')}`;
+
+  // ----- Empty / loading state -----
+  if (!cf || !cf.total) {
+    const kpiEl = document.getElementById('cf-kpi-strip');
+    if (kpiEl) kpiEl.innerHTML = '<div class="info-row" style="grid-column:1/-1;"><div class="info-row-text">Run the optimiser and select a scenario to generate cash flow analysis.</div></div>';
+    const termsEl = document.getElementById('cf-terms');
+    if (termsEl) termsEl.style.display = 'none';
+    if (cfSCurveChart)    { cfSCurveChart.destroy();    cfSCurveChart    = null; }
+    if (cfStackChart)     { cfStackChart.destroy();     cfStackChart     = null; }
+    if (cfComponentChart) { cfComponentChart.destroy(); cfComponentChart = null; }
+    const tbody = document.querySelector('#cf-payments-table tbody');
+    if (tbody) tbody.innerHTML = '';
+    return;
+  }
+
+  // ----- KPI strip -----
+  const k = cf.kpis || {};
+  const kpiEl = document.getElementById('cf-kpi-strip');
+  if (kpiEl) {
+    const kpiCards = [
+      { label: 'Total contract value',         value: fmt(k.total_contract || cf.total) },
+      { label: 'Peak monthly drawdown',        value: fmt(k.peak_monthly || 0), sub: k.peak_month_date ? `M${k.peak_month_index} · ${k.peak_month_date}` : `M${k.peak_month_index}` },
+      { label: `Mobilisation advance${cf.terms ? ` (${cf.terms.mobilisation_advance_pct}%)` : ''}`, value: fmt(k.mob_advance || 0) },
+      { label: `Retention held at PC${cf.terms ? ` (${cf.terms.retention_pct}% / ${cf.terms.retention_release_at_pc}% released)` : ''}`, value: fmt(k.retention_at_pc || 0) },
+    ];
+    kpiEl.innerHTML = kpiCards.map(c => `
+      <div class="metric-card">
+        <div class="metric-label">${c.label}</div>
+        <div class="metric-val" style="font-size:18px;">${c.value}</div>
+        <div class="metric-unit">${c.sub || ''}</div>
+      </div>`).join('');
+  }
+
+  // ----- Component KPI row (Labour / Plant / Material) -----
+  const compEl = document.getElementById('cf-component-strip');
+  if (compEl) {
+    const labourPct   = k.labour_pct   ?? 0;
+    const plantPct    = k.plant_pct    ?? 0;
+    const materialPct = k.material_pct ?? 0;
+    const compCards = [
+      { label: `Total labour (${labourPct}%)`,
+        value: fmt(k.total_labour || 0),
+        sub:   `Peak month ${fmt(k.peak_labour_month || 0)} · avg ${fmt(k.avg_monthly_labour || 0)}/mo`,
+        bar:   { color: '#0c5fb8', pct: labourPct } },
+      { label: `Total plant (${plantPct}%)`,
+        value: fmt(k.total_plant || 0),
+        sub:   `Equipment hire — weekly billing`,
+        bar:   { color: '#a05a00', pct: plantPct } },
+      { label: `Total material (${materialPct}%)`,
+        value: fmt(k.total_material || 0),
+        sub:   `Typically funded on 30–60 day supplier credit`,
+        bar:   { color: '#534AB7', pct: materialPct } },
+    ];
+    compEl.innerHTML = compCards.map(c => `
+      <div class="metric-card">
+        <div class="metric-label">${c.label}</div>
+        <div class="metric-val" style="font-size:18px;">${c.value}</div>
+        <div class="metric-unit">${c.sub}</div>
+        <div class="progress-track" style="margin-top:6px;"><div class="progress-fill" style="width:${c.bar.pct}%;background:${c.bar.color};"></div></div>
+      </div>`).join('');
+  }
+
+  // ----- Contract terms card -----
+  const termsEl = document.getElementById('cf-terms');
+  if (termsEl && cf.terms) {
+    const t = cf.terms;
+    termsEl.style.display = 'block';
+    termsEl.innerHTML = `
+      <div style="font-weight:600;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.05em;font-size:10px;margin-bottom:5px;">Contract / payment terms — ${t.market}</div>
+      <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px;">
+        <div><span style="color:var(--color-text-tertiary);">Basis:</span> ${t.contract_basis || '—'}</div>
+        <div><span style="color:var(--color-text-tertiary);">Mob advance:</span> ${t.mobilisation_advance_pct}%</div>
+        <div><span style="color:var(--color-text-tertiary);">Retention:</span> ${t.retention_pct}% (${t.retention_release_at_pc}% at PC)</div>
+        <div><span style="color:var(--color-text-tertiary);">DLP:</span> ${t.dlp_months} months</div>
+        <div><span style="color:var(--color-text-tertiary);">Payment lag:</span> ${t.payment_lag_days} days</div>
+        <div><span style="color:var(--color-text-tertiary);">VAT:</span> ${t.vat_pct}%</div>
+      </div>`;
+  }
+
+  // ----- S-curve: planned spend vs cumulative net certified vs cumulative retention -----
+  const rows = cf.rows || [];
+  const labels = rows.map(r => `M${r.month_index}${r.date ? '\n' + r.date.slice(2, 7) : ''}`);
+  const cumGross       = rows.map(r => Math.round((r.cum_gross || 0) / 1e6 * 100) / 100);
+  const cumNetCert     = rows.map(r => Math.round((r.cum_net_certified || 0) / 1e6 * 100) / 100);
+  const cumRetention   = rows.map(r => Math.round((r.cum_retention || 0) / 1e6 * 100) / 100);
+  const cumProgress    = rows.map(r => r.progress_pct || 0);
+
+  const sCanvas = document.getElementById('cf-scurve-canvas');
+  if (sCanvas) {
+    if (cfSCurveChart) cfSCurveChart.destroy();
+    cfSCurveChart = new Chart(sCanvas, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [
+          { label: `Cumulative work done (${currency} M)`, data: cumGross, borderColor: '#185FA5', backgroundColor: 'rgba(24,95,165,0.10)', borderWidth: 2, pointRadius: 2, fill: true, tension: 0.4, yAxisID: 'y' },
+          { label: `Net certified (${currency} M)`,        data: cumNetCert, borderColor: '#0F6E56', borderWidth: 2, pointRadius: 2, fill: false, tension: 0.4, yAxisID: 'y' },
+          { label: `Retention held (${currency} M)`,        data: cumRetention, borderColor: '#BA7517', borderWidth: 2, pointRadius: 2, fill: false, tension: 0.4, yAxisID: 'y' },
+          { label: `Progress (%)`,                          data: cumProgress, borderColor: '#888', borderDash: [4, 4], borderWidth: 1.5, pointRadius: 0, fill: false, tension: 0.4, yAxisID: 'y2' },
+        ],
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: { legend: { labels: { font: { size: 11 }, boxWidth: 16 } }, tooltip: { callbacks: { label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y.toFixed(2)}${ctx.dataset.yAxisID === 'y2' ? '%' : ` ${currency} M`}` } } },
+        scales: {
+          y:  { position: 'left',  title: { display: true, text: `${currency} (M)`, font: { size: 11 } }, grid: { color: 'rgba(128,128,128,0.08)' } },
+          y2: { position: 'right', title: { display: true, text: 'Progress %',     font: { size: 11 } }, grid: { display: false }, min: 0, max: 100 },
+          x:  { grid: { color: 'rgba(128,128,128,0.08)' }, ticks: { font: { size: 10 } } },
+        },
+      },
+    });
+  }
+
+  // ----- Labour / Plant / Material stacked bar -----
+  const compMonthly = cf.components_monthly || { labour: [], plant: [], material: [] };
+  const compLabels = rows.map(r => `M${r.month_index}`);
+  const compCanvas = document.getElementById('cf-component-canvas');
+  if (compCanvas) {
+    if (cfComponentChart) cfComponentChart.destroy();
+    cfComponentChart = new Chart(compCanvas, {
+      type: 'bar',
+      data: {
+        labels: compLabels,
+        datasets: [
+          { label: 'Labour',   data: compMonthly.labour.map(v   => Math.round((v || 0) / 1e3)), backgroundColor: '#0c5fb8', stack: 'cost' },
+          { label: 'Plant',    data: compMonthly.plant.map(v    => Math.round((v || 0) / 1e3)), backgroundColor: '#a05a00', stack: 'cost' },
+          { label: 'Material', data: compMonthly.material.map(v => Math.round((v || 0) / 1e3)), backgroundColor: '#534AB7', stack: 'cost' },
+        ],
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'bottom', labels: { font: { size: 10 }, boxWidth: 12 } },
+          tooltip: { mode: 'index', intersect: false, callbacks: { label: ctx => `${ctx.dataset.label}: ${currency} ${(ctx.parsed.y * 1e3).toLocaleString('en-US')}` } },
+        },
+        scales: {
+          x: { stacked: true, grid: { display: false } },
+          y: { stacked: true, title: { display: true, text: `${currency} (000s)`, font: { size: 11 } }, grid: { color: 'rgba(128,128,128,0.08)' } },
+        },
+      },
+    });
+  }
+
+  // ----- Stacked monthly bar chart by section -----
+  const sections = cf.sections || [];
+  const monthsCount = (cf.construction_months || rows.length);
+  const stackLabels = rows.slice(0, cf.total_months || rows.length).map(r => `M${r.month_index}`);
+  const stackDatasets = sections.map(name => ({
+    label: name,
+    data:  (cf.by_section?.[name] || []).slice(0, stackLabels.length).map(v => Math.round((v || 0) / 1e6 * 100) / 100),
+    backgroundColor: CF_SECTION_COLOURS[name] || '#888888',
+    stack: 'spend',
+  }));
+  const stackCanvas = document.getElementById('cf-stack-canvas');
+  if (stackCanvas) {
+    if (cfStackChart) cfStackChart.destroy();
+    cfStackChart = new Chart(stackCanvas, {
+      type: 'bar',
+      data: { labels: stackLabels, datasets: stackDatasets },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { position: 'bottom', labels: { font: { size: 10 }, boxWidth: 12 } }, tooltip: { mode: 'index', intersect: false, callbacks: { label: ctx => `${ctx.dataset.label}: ${currency} ${(ctx.parsed.y * 1e6).toLocaleString('en-US')}` } } },
+        scales: {
+          x: { stacked: true, grid: { display: false } },
+          y: { stacked: true, title: { display: true, text: `${currency} (M)`, font: { size: 11 } }, grid: { color: 'rgba(128,128,128,0.08)' } },
+        },
+      },
+    });
+  }
+
+  // ----- Monthly payment certificate table -----
+  const tbody = document.querySelector('#cf-payments-table tbody');
+  if (tbody) {
+    tbody.innerHTML = rows.map(r => {
+      const phaseColour = r.phase === 'Construction' ? 'inherit' : '#a05a00';
+      const fmtN = n => (n != null && n > 0) ? n.toLocaleString('en-US') : '—';
+      return `<tr>
+        <td style="text-align:right;font-variant-numeric:tabular-nums;">${r.month_index}</td>
+        <td>${r.date || '—'}</td>
+        <td style="color:${phaseColour};">${r.phase}</td>
+        <td style="text-align:right;font-variant-numeric:tabular-nums;">${fmtN(r.work_done)}</td>
+        <td style="text-align:right;font-variant-numeric:tabular-nums;color:#0c5fb8;">${fmtN(r.labour)}</td>
+        <td style="text-align:right;font-variant-numeric:tabular-nums;color:#a05a00;">${fmtN(r.plant)}</td>
+        <td style="text-align:right;font-variant-numeric:tabular-nums;color:#534AB7;">${fmtN(r.material)}</td>
+        <td style="text-align:right;font-variant-numeric:tabular-nums;">${r.progress_pct.toFixed(1)}%</td>
+        <td style="text-align:right;font-variant-numeric:tabular-nums;color:#a05a00;">${r.mob_recovery ? '−' + r.mob_recovery.toLocaleString('en-US') : (r.mob_advance_in ? '+' + r.mob_advance_in.toLocaleString('en-US') : '—')}</td>
+        <td style="text-align:right;font-variant-numeric:tabular-nums;color:#a05a00;">${r.retention_deducted ? '−' + r.retention_deducted.toLocaleString('en-US') : (r.retention_released ? '+' + r.retention_released.toLocaleString('en-US') : '—')}</td>
+        <td style="text-align:right;font-variant-numeric:tabular-nums;font-weight:600;">${r.net_certified.toLocaleString('en-US')}</td>
+        <td style="text-align:right;font-variant-numeric:tabular-nums;color:var(--color-text-tertiary);">${r.vat ? r.vat.toLocaleString('en-US') : '—'}</td>
+        <td style="text-align:right;font-variant-numeric:tabular-nums;font-weight:600;color:#0F6E56;">${r.net_payment.toLocaleString('en-US')}</td>
+      </tr>`;
+    }).join('');
+  }
+}
+
+// Wire P6 / MS Project / PDF Gantt buttons in the gantt panel
+document.addEventListener('click', async e => {
+  const t = e.target;
+  if (!(t instanceof HTMLButtonElement)) return;
+  const txt = t.textContent.trim();
+  if (txt === 'Export P6 XER') return doExport('export/xer', 'xer');
+  if (txt === 'Export Excel' && t.closest('#sub-cashflow')) return doExport('export/cashflow', 'xlsx');
+});
+
+async function doExport(path, ext) {
+  if (!projectId) { toast('No project loaded.', true); return; }
+  try {
+    const r = await api(`/api/projects/${projectId}/${path}`, { method: 'POST' });
+    window.open(r.url, '_blank');
+  } catch (e) { toast('Export failed: ' + e.message, true); }
+}
+</script>

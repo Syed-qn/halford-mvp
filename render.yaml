@@ -1,0 +1,46 @@
+# Render.com Blueprint — provisions Halford as a single web service with a persistent
+# disk for project state, uploads, exports, and the APS Properties Database cache.
+#
+# Deploy:
+#   1. Push this repo to GitHub.
+#   2. In Render dashboard → New → Blueprint → connect repo. Render reads this file.
+#   3. Set the secret env vars marked `sync: false` below in the Render dashboard:
+#        - ANTHROPIC_API_KEY
+#        - APS_CLIENT_ID
+#        - APS_CLIENT_SECRET
+#   4. After first deploy, copy the service URL (e.g. https://halford.onrender.com)
+#      and (a) add it as an APS Allowed Callback URL: `<URL>/api/aps/auth/callback`
+#      (b) optionally set APS_WEBHOOK_URL=<URL>/api/aps/webhooks/callback so
+#          translation events push to the server instead of polling.
+#
+# https://render.com/docs/blueprint-spec
+
+services:
+  - type: web
+    name: halford-ai-qs-workbench
+    runtime: node
+    plan: standard            # Persistent disks are not available on `free` — Standard ($7/mo) is the minimum
+    region: frankfurt         # Closest to UAE / GCC; change if your users are elsewhere
+    buildCommand: cd server && npm install
+    startCommand: cd server && npm start
+    healthCheckPath: /healthz
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000          # Render injects PORT — this is just the default if unset
+      - key: DATA_DIR
+        value: /var/data      # Matches the disk mount path below
+      - key: ANTHROPIC_API_KEY
+        sync: false           # Set in Render dashboard
+      - key: APS_CLIENT_ID
+        sync: false
+      - key: APS_CLIENT_SECRET
+        sync: false
+      - key: APS_WEBHOOK_URL
+        sync: false           # Optional — set after first deploy with the public URL
+    disk:
+      name: halford-data
+      mountPath: /var/data
+      sizeGB: 10              # 10 GB covers ~50 projects with full DWG uploads + PDB cache

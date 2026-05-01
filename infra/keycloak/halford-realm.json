@@ -1,0 +1,58 @@
+{
+  "realm": "halford",
+  "enabled": true,
+  "displayName": "Halford AI QS Workbench",
+  "registrationAllowed": false,
+  "resetPasswordAllowed": true,
+  "rememberMe": true,
+  "clients": [
+    {
+      "clientId": "halford-frontend",
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": true,
+      "redirectUris": ["http://localhost:3000/*", "http://localhost:5173/*"],
+      "webOrigins": ["+"],
+      "attributes": {
+        "post.logout.redirect.uris": "+"
+      }
+    },
+    {
+      "clientId": "halford-server",
+      "secret": "halford-server-dev-secret",
+      "publicClient": false,
+      "serviceAccountsEnabled": true,
+      "directAccessGrantsEnabled": true,
+      "standardFlowEnabled": false
+    }
+  ],
+  "users": [
+    {
+      "username": "qs",
+      "enabled": true,
+      "email": "qs@halford.local",
+      "firstName": "QS",
+      "lastName": "User",
+      "emailVerified": true,
+      "credentials": [{ "type": "password", "value": "halford", "temporary": false }],
+      "realmRoles": ["qs"]
+    },
+    {
+      "username": "planner",
+      "enabled": true,
+      "email": "planner@halford.local",
+      "firstName": "Planner",
+      "lastName": "User",
+      "emailVerified": true,
+      "credentials": [{ "type": "password", "value": "halford", "temporary": false }],
+      "realmRoles": ["planner"]
+    }
+  ],
+  "roles": {
+    "realm": [
+      { "name": "qs", "description": "Quantity Surveyor — full BoQ access" },
+      { "name": "planner", "description": "Planner — schedule + scenarios" },
+      { "name": "viewer", "description": "Read-only access" }
+    ]
+  }
+}
